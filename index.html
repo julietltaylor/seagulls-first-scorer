@@ -727,7 +727,7 @@ const SEASON_RESULTS = [
   {id:37, datetime:'2026-04-11T14:00', comp:'Premier League', opp:'Burnley',         ha:'A', result:'W 2-0', scorer:'Mats Wieffer',           goalTime:"(43')",   winner:'',      potWon:0},
   {id:38, datetime:'2026-04-18T16:30', comp:'Premier League', opp:'Tottenham',       ha:'A', result:'D 2-2', scorer:'Kaoru Mitoma',           goalTime:"(45+3')", winner:'',      potWon:0},
   // ── UPCOMING ──
-  {id:39, datetime:'2026-04-21T20:00', comp:'Premier League', opp:'Chelsea',         ha:'H', result:'TBD',   scorer:null,                    goalTime:null,      winner:null,    potWon:0, apiFixtureId:740928},
+  {id:39, datetime:'2026-04-21T20:00', comp:'Premier League', opp:'Chelsea',         ha:'H', result:'W 3-0', scorer:'Ferdi Kadioglu',           goalTime:"(3')",    winner:'',      potWon:0, apiFixtureId:740928},
   {id:40, datetime:'2026-05-02T14:00', comp:'Premier League', opp:'Newcastle',       ha:'A', result:'TBD',   scorer:null,                    goalTime:null,      winner:null,    potWon:0},
   {id:41, datetime:'2026-05-09T14:00', comp:'Premier League', opp:'Wolves',          ha:'H', result:'TBD',   scorer:null,                    goalTime:null,      winner:null,    potWon:0},
   {id:42, datetime:'2026-05-17T14:00', comp:'Premier League', opp:'Leeds',           ha:'A', result:'TBD',   scorer:null,                    goalTime:null,      winner:null,    potWon:0},
@@ -1139,6 +1139,7 @@ function showPage(id) {
 function renderPickSlots(fix, containerId, showPickArea) {
   const container = document.getElementById(containerId);
   if (!fix) { container.innerHTML = '<div class="empty">No upcoming fixture</div>'; return; }
+  const isCup = fix.comp && fix.comp !== 'Premier League';
   const order = getPickOrder(getCompletedCount(), fix ? fix.comp : null);
   const fp = S.picks[fix.id] || {};
   const ko = getKickoff(fix);
