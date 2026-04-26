@@ -1,0 +1,2687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Seagulls First Scorer</title>
+<style>
+/* System font fallbacks — no external requests needed */
+@font-face {
+  font-family: 'Bebas Neue';
+  src: local('Impact'), local('Arial Narrow'), local('Arial');
+}
+</style>
+<style>
+:root {
+  --blue:#0057B8; --blue-d:#003d82; --blue-l:#1a6fd4;
+  --gold:#FFD700; --gold-d:#c9a800;
+  --bg:#05101e; --bg2:#091627; --bg3:#0d1d30;
+  --surf:#112038; --surf2:#162844;
+  --brd:rgba(0,87,184,0.22); --brd2:rgba(0,87,184,0.45);
+  --txt:#ddeaf8; --muted:#6b93bb;
+  --green:#22c55e; --red:#ef4444; --amber:#f59e0b;
+  --r:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(ellipse 90% 60% at 15% -10%,rgba(0,87,184,.18) 0%,transparent 55%),
+  radial-gradient(ellipse 70% 50% at 85% 110%,rgba(0,87,184,.12) 0%,transparent 55%);
+  pointer-events:none;z-index:0;}
+
+header{position:sticky;top:0;z-index:100;background:rgba(5,16,30,.92);backdrop-filter:blur(18px);border-bottom:1px solid var(--brd);}
+.hdr{max-width:1140px;margin:0 auto;display:flex;align-items:center;gap:1rem;padding:0 1.25rem;height:58px;}
+.logo{display:flex;align-items:center;gap:.6rem;}
+.logo-icon{width:34px;height:34px;background:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.logo-txt{font-family:'Bebas Neue','Arial Narrow',Impact,sans-serif;font-size:1.35rem;letter-spacing:.06em;color:#fff;}
+.logo-txt em{color:var(--gold);font-style:normal;}
+nav{display:flex;gap:.15rem;flex:1;justify-content:center;}
+nav button{background:none;border:none;color:var(--muted);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:.78rem;font-weight:500;padding:.35rem .7rem;border-radius:7px;cursor:pointer;transition:all .18s;}
+nav button:hover{color:var(--txt);background:var(--surf);}
+nav button.active{color:#fff;background:var(--blue);}
+.usr-chip{display:flex;align-items:center;gap:.45rem;background:var(--surf);border:1px solid var(--brd);border-radius:20px;padding:.25rem .7rem .25rem .35rem;cursor:pointer;transition:all .18s;flex-shrink:0;}
+.usr-chip:hover{border-color:var(--blue);}
+.ava{width:26px;height:26px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:#fff;flex-shrink:0;}
+.usr-name{font-size:.8rem;color:var(--muted);white-space:nowrap;}
+
+main{position:relative;z-index:1;max-width:1140px;margin:0 auto;padding:1.75rem 1.25rem 5rem;}
+.page{display:none;animation:fadeIn .25s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+#login-screen{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;align-items:flex-start;justify-content:center;padding:1rem;overflow-y:auto;}
+#login-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 30%,rgba(0,87,184,.22) 0%,transparent 65%);}
+.login-card{position:relative;background:var(--surf);border:1px solid var(--brd2);border-radius:20px;padding:1.5rem;width:100%;max-width:440px;text-align:center;margin:auto;}
+.login-icon{width:52px;height:52px;background:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin:0 auto 1rem;box-shadow:0 0 30px rgba(0,87,184,.4);}
+.login-card h1{font-family:'Bebas Neue','Arial Narrow',Impact,sans-serif;font-size:1.6rem;letter-spacing:.05em;margin-bottom:.2rem;}
+.login-card h1 em{color:var(--gold);font-style:normal;}
+.login-sub{color:var(--muted);font-size:.8rem;margin-bottom:1.1rem;line-height:1.4;}
+.player-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.35rem;margin-bottom:1rem;}
+.plr-btn{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:.65rem .5rem;cursor:pointer;transition:all .2s;color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:.85rem;font-weight:500;}
+.plr-btn:hover{border-color:var(--blue);background:var(--surf2);transform:translateY(-2px);}
+.plr-initial{width:30px;height:30px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;margin:0 auto .35rem;}
+.admin-section{border-top:1px solid var(--brd);padding-top:.85rem;margin-top:.25rem;}
+.admin-section p{font-size:.78rem;color:var(--muted);margin-bottom:.6rem;}
+.row{display:flex;gap:.5rem;}
+
+.sec-hdr{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1.1rem;}
+.sec-title{font-family:'Bebas Neue','Arial Narrow',Impact,sans-serif;font-size:1.55rem;letter-spacing:.05em;}
+.sec-title em{color:var(--gold);font-style:normal;}
+.sec-sub{color:var(--muted);font-size:.78rem;}
+
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:16px;padding:1.2rem;}
+.card.glow{border-color:var(--brd2);box-shadow:0 0 36px rgba(0,87,184,.12);}
+
+input,select,textarea{background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:.6rem .85rem;color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:.88rem;outline:none;transition:border-color .18s;width:100%;}
+input:focus,select:focus{border-color:var(--blue);}
+label{font-size:.73rem;color:var(--muted);display:block;margin-bottom:.32rem;font-weight:500;letter-spacing:.03em;text-transform:uppercase;}
+.form-group{margin-bottom:.85rem;}
+
+.btn{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:.6rem 1.2rem;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;display:inline-flex;align-items:center;gap:.4rem;}
+.btn:hover{background:var(--blue-l);transform:translateY(-1px);}
+.btn:active{transform:none;}
+.btn.gold{background:var(--gold);color:#111;}.btn.gold:hover{background:var(--gold-d);}
+.btn.ghost{background:transparent;border:1px solid var(--brd);color:var(--muted);}.btn.ghost:hover{border-color:var(--blue);color:var(--txt);}
+.btn.danger{background:var(--red);}
+.btn.sm{padding:.38rem .8rem;font-size:.78rem;}
+.btn.full{width:100%;justify-content:center;}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+.fixture-hero{background:linear-gradient(135deg,var(--blue-d) 0%,var(--bg3) 100%);border:1px solid var(--blue);border-radius:18px;padding:1.6rem;margin-bottom:1.4rem;position:relative;overflow:hidden;}
+.fixture-hero::after{content:'⚽';position:absolute;right:1.5rem;top:50%;transform:translateY(-50%);font-size:5rem;opacity:.06;pointer-events:none;}
+.fix-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:var(--gold);font-weight:600;margin-bottom:.45rem;}
+.fix-teams{font-family:'Bebas Neue','Arial Narrow',Impact,sans-serif;font-size:2rem;letter-spacing:.04em;margin-bottom:.3rem;}
+.fix-meta{font-size:.8rem;color:var(--muted);margin-bottom:1rem;}
+.pot-badge{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,215,0,.12);border:1px solid rgba(255,215,0,.3);border-radius:8px;padding:.35rem .85rem;font-size:.85rem;font-weight:700;color:var(--gold);margin-bottom:1.1rem;}
+
+.pick-order-wrap{background:var(--bg2);border:1px solid var(--brd);border-radius:12px;padding:1rem;margin-bottom:1.1rem;}
+.pick-order-title{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:600;margin-bottom:.7rem;}
+.pick-slots{display:flex;flex-direction:column;gap:.4rem;}
+.pick-slot{display:flex;align-items:center;gap:.75rem;padding:.55rem .8rem;border-radius:9px;border:1px solid transparent;transition:all .2s;}
+.pick-slot.active-slot{background:rgba(0,87,184,.15);border-color:var(--blue);}
+.pick-slot.done-slot{background:rgba(34,197,94,.06);border-color:rgba(34,197,94,.2);}
+.pick-slot.locked-slot{opacity:.4;}
+.pick-slot.waiting-slot{opacity:.6;}
+.pick-slot.late-slot{background:rgba(245,158,11,.06);border-color:rgba(245,158,11,.2);}
+.slot-num{width:22px;height:22px;border-radius:50%;background:var(--surf2);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0;font-family:ui-monospace,'SF Mono',Menlo,Monaco,Consolas,monospace;}
+.pick-slot.active-slot .slot-num{background:var(--blue);color:#fff;}
+.pick-slot.done-slot .slot-num{background:var(--green);color:#fff;}
+.slot-player{font-weight:600;font-size:.88rem;flex:1;}
+.slot-pick{font-size:.8rem;color:var(--muted);}
+.slot-pick.confirmed{color:var(--green);font-weight:600;}
+.slot-time{font-family:ui-monospace,'SF Mono',Menlo,Monaco,Consolas,monospace;font-size:.72rem;color:var(--muted);text-align:right;flex-shrink:0;}
+.slot-time.active{color:var(--amber);font-weight:600;}
+.slot-status{font-size:.72rem;padding:.15rem .5rem;border-radius:5px;flex-shrink:0;}
+.status-active{background:rgba(0,87,184,.2);color:#7ab3ff;}
+.status-done{background:rgba(34,197,94,.15);color:var(--green);}
+.status-waiting{background:rgba(107,147,187,.1);color:var(--muted);}
+.status-locked{background:rgba(239,68,68,.12);color:var(--red);}
+.status-skipped{background:rgba(245,158,11,.12);color:var(--amber);}
+
+.countdown-wrap{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:.85rem;margin-bottom:1rem;text-align:center;}
+.countdown-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:.4rem;}
+.countdown-display{font-family:'Bebas Neue','Arial Narrow',Impact,sans-serif;font-size:2.4rem;letter-spacing:.08em;line-height:1;}
+.countdown-display.urgent{color:var(--red);animation:pulse 1s infinite;}
+.countdown-display.active{color:var(--gold);}
+.countdown-display.waiting{color:var(--muted);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.window-opens{font-size:.78rem;color:var(--muted);margin-top:.3rem;}
+
+.your-pick-area{background:var(--bg3);border:1px solid var(--brd);border-radius:12px;padding:1rem;margin-top:.75rem;}
+.your-pick-area.can-pick{border-color:var(--blue);background:rgba(0,87,184,.07);}
+.pick-form{display:flex;gap:.6rem;align-items:flex-end;flex-wrap:wrap;}
+.pick-form>div{flex:1;min-width:180px;}
+.pick-submitted{display:flex;align-items:center;gap:.6rem;padding:.7rem 1rem;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:9px;font-size:.88rem;}
+.pick-locked-msg{display:flex;align-items:center;gap:.6rem;padding:.7rem 1rem;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.18);border-radius:9px;font-size:.85rem;color:var(--muted);}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1.4rem;}
+@media(max-width:600px){
+  /* Header */
+  .hdr{padding:0 .6rem;gap:.4rem;height:52px;}
+  .logo-txt{font-size:.95rem;}
+  .logo-icon{width:28px;height:28px;font-size:.85rem;}
+  nav{gap:.1rem;}
+  nav button{font-size:.6rem;padding:.25rem .32rem;border-radius:5px;}
+  .usr-chip{padding:.2rem .5rem .2rem .3rem;}
+  .usr-name{display:none;}
+
+  /* Main layout */
+  main{padding:1rem .65rem 4rem;}
+
+  /* Login */
+  .login-card{padding:1.1rem;border-radius:14px;max-width:100%;}
+  .login-card h1{font-size:1.35rem;}
+  .login-sub{font-size:.78rem;}
+  .player-grid{grid-template-columns:repeat(3,1fr);gap:.35rem;}
+  .plr-btn{padding:.5rem .3rem;font-size:.78rem;}
+  .plr-initial{width:26px;height:26px;font-size:.72rem;}
+
+  /* Stats */
+  .stats-row{grid-template-columns:repeat(2,1fr);gap:.5rem;}
+  .stat-num{font-size:2rem;}
+  .stat-lbl{font-size:.62rem;}
+
+  /* Fixture hero */
+  .fixture-hero{padding:1.1rem;}
+  .fix-teams{font-size:1.5rem;}
+  .fixture-hero::after{font-size:3.5rem;}
+
+  /* Pick slots */
+  .pick-slot{gap:.4rem;padding:.45rem .5rem;}
+  .slot-player{font-size:.8rem;}
+  .slot-time{font-size:.65rem;}
+  .slot-status{font-size:.65rem;padding:.12rem .35rem;}
+
+  /* Leaderboard */
+  .lb-row{gap:.5rem;padding:.65rem .75rem;}
+  .lb-ava{width:30px;height:30px;font-size:.72rem;}
+  .lb-name{font-size:.82rem;}
+  .lb-pts{font-size:1.3rem;}
+
+  /* Fixtures */
+  .fix-row{flex-wrap:wrap;gap:.35rem;padding:.6rem .7rem;}
+  .fix-date{width:56px;font-size:.65rem;}
+  .fix-opp{font-size:.78rem;}
+  .fix-scorer{display:none;}
+
+  /* Tables */
+  table{font-size:.72rem;}
+  th,td{padding:.45rem .45rem;}
+
+  /* Admin */
+  .admin-grid{grid-template-columns:1fr;}
+  .admin-sec-title{font-size:.95rem;}
+
+  /* Countdown */
+  .countdown-display{font-size:1.8rem;}
+  .countdown-wrap{padding:.65rem;}
+
+  /* Pick form */
+  .pick-form{flex-direction:column;}
+  .pick-form .btn{width:100%;}
+
+  /* Cards */
+  .card{padding:.85rem;}
+  .pot-badge{font-size:.78rem;padding:.28rem .65rem;}
+}
+
+/* Extra small phones */
+@media(max-width:380px){
+  nav button{font-size:.55rem;padding:.22rem .28rem;}
+  .player-grid{grid-template-columns:repeat(2,1fr);}
+  .fix-ha{display:none;}
+}
+.stat-card{background:var(--surf);border:1px solid var(--brd);border-radius:13px;padding:1rem;text-align:center;}
+.stat-num{font-family:'Bebas Neue','Arial Narrow',Impact,sans-serif;font-size:2.6rem;color:var(--gold);line-height:1;margin-bottom:.2rem;}
+.stat-lbl{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:500;}
+
+.lb-list{display:flex;flex-direction:column;gap:.45rem;}
+.lb-row{display:flex;align-items:center;gap:.85rem;background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:.8rem 1rem;transition:all .2s;}
+.lb-row:hover{border-color:var(--brd2);transform:translateX(2px);}
+.lb-row.top1{background:linear-gradient(135deg,rgba(255,215,0,.09) 0%,var(--surf) 100%);border-color:rgba(255,215,0,.3);}
+.lb-row.me{border-color:var(--brd2);}
+.lb-rank{font-family:'Bebas Neue','Arial Narrow',Impact,sans-serif;font-size:1.25rem;width:26px;text-align:center;color:var(--muted);flex-shrink:0;}
+.lb-row.top1 .lb-rank{color:var(--gold);}
+.lb-ava{width:34px;height:34px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0;}
+.lb-row.top1 .lb-ava{background:var(--gold);color:#111;}
+.lb-info{flex:1;min-width:0;}
+.lb-name{font-weight:600;font-size:.9rem;}
+.lb-sub{font-size:.72rem;color:var(--muted);}
+.lb-pts{font-family:'Bebas Neue','Arial Narrow',Impact,sans-serif;font-size:1.55rem;flex-shrink:0;}
+.lb-row.top1 .lb-pts{color:var(--gold);}
+.lb-ptslbl{font-size:.62rem;text-transform:uppercase;color:var(--muted);letter-spacing:.06em;text-align:right;}
+
+.fix-list{display:flex;flex-direction:column;gap:.45rem;}
+.fix-row{display:flex;align-items:center;gap:.8rem;background:var(--surf);border:1px solid var(--brd);border-radius:11px;padding:.7rem .9rem;font-size:.83rem;}
+.fix-row.upcoming{border-color:rgba(0,87,184,.32);}
+.fix-date{font-family:ui-monospace,'SF Mono',Menlo,Monaco,Consolas,monospace;font-size:.72rem;color:var(--muted);width:68px;flex-shrink:0;}
+.comp-tag{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:.18rem .45rem;border-radius:4px;flex-shrink:0;}
+.comp-tag.pl{background:rgba(61,25,91,.6);color:#c084fc;border:1px solid rgba(192,132,252,.2);}
+.comp-tag.fa{background:rgba(200,16,46,.2);color:#f87171;border:1px solid rgba(248,113,113,.2);}
+.comp-tag.lc{background:rgba(0,166,80,.2);color:#4ade80;border:1px solid rgba(74,222,128,.2);}
+.fix-opp{flex:1;font-weight:500;}
+.fix-ha{font-size:.72rem;color:var(--muted);}
+.fix-res{font-family:ui-monospace,'SF Mono',Menlo,Monaco,Consolas,monospace;font-size:.78rem;font-weight:500;width:46px;text-align:center;flex-shrink:0;}
+.fix-res.w{color:var(--green);}.fix-res.d{color:var(--amber);}.fix-res.l{color:var(--red);}.fix-res.tbd{color:var(--muted);font-style:italic;}
+.fix-scorer{font-size:.76rem;color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fix-pot{font-size:.73rem;color:var(--gold);font-weight:700;width:44px;text-align:right;flex-shrink:0;}
+
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.82rem;}
+th{text-align:left;padding:.55rem .7rem;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;border-bottom:1px solid var(--brd);}
+td{padding:.62rem .7rem;border-bottom:1px solid rgba(0,87,184,.1);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(0,87,184,.04);}
+.win-tag{display:inline-flex;align-items:center;gap:.28rem;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.22);color:var(--green);border-radius:6px;padding:.18rem .48rem;font-size:.74rem;font-weight:500;}
+.no-tag{color:var(--muted);font-style:italic;font-size:.77rem;}
+.pts-bub{display:inline-flex;align-items:center;justify-content:center;background:rgba(255,215,0,.1);color:var(--gold);border:1px solid rgba(255,215,0,.22);border-radius:6px;padding:.12rem .48rem;font-family:'Bebas Neue','Arial Narrow',Impact,sans-serif;font-size:.95rem;min-width:30px;text-align:center;}
+
+.tab-bar{display:flex;gap:.22rem;background:var(--bg2);border:1px solid var(--brd);border-radius:9px;padding:.22rem;margin-bottom:1.1rem;width:fit-content;}
+.tab-btn{background:none;border:none;color:var(--muted);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:.78rem;font-weight:500;padding:.38rem .8rem;border-radius:6px;cursor:pointer;transition:all .18s;}
+.tab-btn.active{background:var(--blue);color:#fff;}
+
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
+@media(max-width:720px){.admin-grid{grid-template-columns:1fr;}}
+.admin-sec-title{font-family:'Bebas Neue','Arial Narrow',Impact,sans-serif;font-size:1.1rem;letter-spacing:.05em;color:var(--gold);margin-bottom:.85rem;}
+.admin-order-list{display:flex;flex-direction:column;gap:.35rem;}
+.order-item{display:flex;align-items:center;gap:.65rem;background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:.5rem .75rem;cursor:grab;}
+.order-item:active{cursor:grabbing;}
+.order-handle{color:var(--muted);font-size:1rem;}
+.order-num{font-family:ui-monospace,'SF Mono',Menlo,Monaco,Consolas,monospace;font-size:.78rem;color:var(--muted);width:20px;}
+.order-name{flex:1;font-weight:500;font-size:.88rem;}
+.admin-pick-row{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:.5rem .75rem;font-size:.85rem;margin-bottom:.35rem;}
+.players-chips{display:flex;flex-wrap:wrap;gap:.4rem;}
+.player-chip{display:flex;align-items:center;gap:.3rem;background:var(--bg2);border:1px solid var(--brd);border-radius:16px;padding:.22rem .5rem .22rem .7rem;font-size:.8rem;}
+.chip-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:0 .1rem;line-height:1;}
+
+.toast-wrap{position:fixed;bottom:1.4rem;right:1.4rem;z-index:500;display:flex;flex-direction:column;gap:.4rem;}
+.toast{background:var(--surf);border:1px solid var(--brd);border-radius:10px;padding:.7rem .95rem;font-size:.83rem;min-width:210px;display:flex;align-items:center;gap:.45rem;animation:slideIn .28s ease;box-shadow:0 8px 30px rgba(0,0,0,.4);}
+.toast.ok{border-color:rgba(34,197,94,.38);}.toast.err{border-color:rgba(239,68,68,.38);}
+@keyframes slideIn{from{transform:translateX(110%);opacity:0}to{transform:none;opacity:1}}
+
+hr{border:none;border-top:1px solid var(--brd);margin:1rem 0;}
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--muted);font-size:.88rem;}
+.empty .ei{font-size:2.2rem;margin-bottom:.6rem;}
+.tag{display:inline-block;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:.18rem .55rem;border-radius:5px;}
+.tag.me{background:rgba(0,87,184,.18);color:#7ab3ff;border:1px solid rgba(0,87,184,.3);}
+.pin-overlay{position:fixed;inset:0;z-index:300;background:rgba(5,16,30,.92);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;padding:1.25rem;}
+.pin-card{background:var(--surf);border:1px solid var(--brd2);border-radius:18px;padding:2rem;width:100%;max-width:340px;text-align:center;}
+.pin-title{font-family:'Bebas Neue','Arial Narrow',Impact,sans-serif;font-size:1.6rem;letter-spacing:.05em;margin-bottom:.25rem;}
+.pin-title em{color:var(--gold);font-style:normal;}
+.pin-sub{font-size:.82rem;color:var(--muted);margin-bottom:1.5rem;}
+.pin-dots{display:flex;justify-content:center;gap:.75rem;margin-bottom:1.25rem;}
+.pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--brd2);background:transparent;transition:all .2s;}
+.pin-dot.filled{background:var(--blue);border-color:var(--blue);}
+.pin-dot.error{background:var(--red);border-color:var(--red);animation:shake .3s ease;}
+.pin-numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:.85rem;}
+.pin-key{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:.85rem;font-size:1.2rem;font-weight:600;cursor:pointer;transition:all .18s;color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;}
+.pin-key:hover{background:var(--surf2);border-color:var(--blue);}
+.pin-key:active{transform:scale(.95);}
+.pin-key.del{font-size:.85rem;color:var(--muted);}
+.pin-key.del:hover{color:var(--red);border-color:var(--red);}
+.pin-err{color:var(--red);font-size:.78rem;min-height:1.1em;margin-bottom:.5rem;}
+.pin-back{background:none;border:none;color:var(--muted);font-size:.8rem;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;}
+.pin-back:hover{color:var(--txt);}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.season-badge{display:inline-flex;align-items:center;gap:.4rem;background:rgba(0,87,184,.1);border:1px solid var(--brd);border-radius:8px;padding:.3rem .75rem;font-size:.75rem;color:var(--muted);margin-bottom:1rem;}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-icon">🔵</div>
+    <h1>Seagulls <em>First</em> Scorer</h1>
+    <p class="login-sub">2025/26 Trial · Next game: Brighton vs Chelsea<br>Pick Brighton's first goalscorer · Pot rolls over!</p>
+    <div class="player-grid" id="player-grid"></div>
+    <div class="admin-section">
+      <p>🔐 Admin access</p>
+      <div style="display:flex;gap:.5rem;align-items:center">
+        <input type="password" id="admin-pw" placeholder="Password" onkeydown="if(event.key==='Enter')adminLogin()" style="flex:1;min-width:0">
+        <button class="btn sm" onclick="adminLogin()" style="flex-shrink:0">Enter</button>
+      </div>
+      <div id="admin-pw-err" style="color:var(--red);font-size:.75rem;margin-top:.4rem;min-height:1em"></div>
+      <div style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--brd);text-align:center">
+        <button onclick="hardReset()" style="background:none;border:none;color:var(--muted);font-size:.72rem;cursor:pointer;text-decoration:underline">Not seeing player buttons? Tap here to reset</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="hdr">
+    <div class="logo"><div class="logo-icon">🔵</div><div class="logo-txt">Seagulls <em>First</em> Scorer</div></div>
+    <nav>
+      <button onclick="showPage('home')" id="nav-home" class="active">Home</button>
+      <button onclick="showPage('picks')" id="nav-picks">Picks</button>
+      <button onclick="showPage('leaderboard')" id="nav-leaderboard">Leaderboard</button>
+      <button onclick="showPage('fixtures')" id="nav-fixtures">Fixtures</button>
+      <button onclick="showPage('results')" id="nav-results">Results</button>
+      <button onclick="showPage('admin')" id="nav-admin" style="display:none">⚙ Admin</button>
+    </nav>
+    <div class="usr-chip" onclick="logout()">
+      <div class="ava" id="hdr-ava">?</div>
+      <span class="usr-name" id="hdr-name">Sign in</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="sec-hdr"><div><div class="sec-title">Welcome, <em id="home-name">Player</em></div><div class="sec-sub" id="home-season-sub">2025/26 Season Trial</div></div></div>
+  <div class="season-badge">📅 2025/26 Season · Trial game: Brighton vs Chelsea · 21 Apr 2026</div>
+  <div class="fixture-hero" id="home-hero">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.6rem"><div class="fix-label" style="margin:0">⚡ Next Fixture</div><div id="lineup-badge" style="font-size:.72rem;padding:.18rem .6rem;border-radius:6px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:var(--amber)">⏳ Lineup not yet confirmed</div></div>
+    <div class="fix-teams" id="h-teams">Brighton vs Chelsea</div>
+    <div class="fix-meta" id="h-meta">Tue 21 Apr 2026 · KO 20:00 · Premier League · Home</div>
+    <div class="pot-badge" id="h-pot">🏆 Pot: 3 pts</div>
+    <div class="countdown-wrap">
+      <div class="countdown-label" id="h-cd-label">Pick window opens in</div>
+      <div class="countdown-display waiting" id="h-cd">—:——</div>
+      <div class="window-opens" id="h-window-opens"></div>
+    </div>
+    <div class="pick-order-wrap">
+      <div class="pick-order-title" id="h-order-title">🎯 Pick Order</div>
+      <div class="pick-slots" id="h-pick-slots"></div>
+    </div>
+    <div class="your-pick-area" id="h-pick-area">
+      <div class="pick-locked-msg">⏳ Pick window not yet open</div>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-num" id="s-pts">0</div><div class="stat-lbl">Your Points</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-picks">0</div><div class="stat-lbl">Correct Picks</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-pot">3</div><div class="stat-lbl">Current Pot</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-rank">—</div><div class="stat-lbl">Your Rank</div></div>
+  </div>
+  <div class="sec-hdr"><div class="sec-title">Top <em>3</em></div></div>
+  <div class="lb-list" id="home-lb"></div>
+</div>
+
+<!-- PICKS -->
+<div class="page" id="page-picks">
+  <div class="sec-hdr"><div><div class="sec-title">My <em>Pick</em></div><div class="sec-sub">One pick per game · unique players only</div></div></div>
+  <div class="card glow" style="margin-bottom:1.25rem">
+    <div class="fix-label">⚡ Next Fixture</div>
+    <div class="fix-teams">Brighton vs Chelsea</div>
+    <div class="fix-meta">Tue 21 Apr 2026 · KO 20:00 · Premier League · Home</div>
+    <div class="pot-badge">🏆 Pot: 3 pts</div>
+    <hr>
+    <div class="countdown-wrap">
+      <div class="countdown-label" id="p-cd-label">—</div>
+      <div class="countdown-display waiting" id="p-cd">—:——</div>
+      <div class="window-opens" id="p-window-opens"></div>
+    </div>
+    <div class="pick-order-wrap" style="margin-bottom:.85rem">
+      <div class="pick-order-title">🎯 Pick Order</div>
+      <div class="pick-slots" id="p-pick-slots"></div>
+    </div>
+    <div class="your-pick-area" id="p-pick-area">
+      <div class="pick-locked-msg">⏳ Pick window not yet open</div>
+    </div>
+  </div>
+  <div class="sec-hdr"><div class="sec-title">My <em>History</em></div><div class="sec-sub">2025/26 Season</div></div>
+  <div class="tbl-wrap card" style="padding:0">
+    <table><thead><tr><th>Date</th><th>Comp</th><th>Opposition</th><th>My Pick</th><th>First Scorer</th><th>Result</th><th>Points</th></tr></thead>
+    <tbody id="my-hist"></tbody></table>
+  </div>
+</div>
+
+<!-- LEADERBOARD -->
+<div class="page" id="page-leaderboard">
+  <div class="sec-hdr"><div><div class="sec-title"><em>Leaderboard</em></div><div class="sec-sub">2025/26 Season</div></div></div>
+  <div class="card" style="margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+    <span style="font-size:.83rem;color:var(--muted)">🏆 Rolling pot going into Chelsea:</span>
+    <span class="pot-badge">3 pts</span>
+  </div>
+  <div class="lb-list" id="main-lb"></div>
+</div>
+
+<!-- FIXTURES -->
+<div class="page" id="page-fixtures">
+  <div class="sec-hdr"><div><div class="sec-title">Upcoming <em>Fixtures</em></div><div class="sec-sub">2025/26 Season</div></div></div>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="showFixTab('upcoming',this)">Upcoming</button>
+    <button class="tab-btn" onclick="showFixTab('all',this)">All Season</button>
+  </div>
+  <div class="fix-list" id="fix-list"></div>
+</div>
+
+<!-- RESULTS -->
+<div class="page" id="page-results">
+  <div class="sec-hdr"><div><div class="sec-title">Past <em>Results</em></div><div class="sec-sub">2025/26 All Competitions</div></div></div>
+  <div class="tbl-wrap card" style="padding:0">
+    <table><thead><tr><th>Date</th><th>Comp</th><th>Opposition</th><th>Result</th><th>First Scorer</th><th>Winner</th><th>Pot</th></tr></thead>
+    <tbody id="results-body"></tbody></table>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div class="page" id="page-admin">
+  <div class="sec-hdr"><div><div class="sec-title">⚙ <em>Admin</em></div><div class="sec-sub">Manage the game</div></div></div>
+  <div class="admin-grid">
+    <div class="card">
+      <div class="admin-sec-title">✅ Confirm Match Result</div>
+      <div class="form-group"><label>Fixture</label><select id="a-fix-sel" onchange="loadAdminPicks()"><option value="">Select…</option></select></div>
+      <div class="form-group"><label>Result (e.g. W 2-1)</label><input type="text" id="a-result" placeholder="W 2-1"></div>
+      <div class="form-group"><label>First Brighton Goalscorer</label><select id="a-scorer"><option value="">Select…</option><option value="no_goal">No Brighton goalscorer</option></select></div>
+      <div class="form-group"><label>Goal Time</label><input type="text" id="a-time" placeholder="e.g. 23'">
+        <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem">⚠️ Any picks submitted after this goal time will be disqualified</div>
+      </div>
+      <button class="btn full" onclick="confirmResult()">✅ Confirm & Award Points</button>
+    </div>
+    <div class="card">
+      <div class="admin-sec-title">📅 Add Fixture</div>
+      <div class="form-group"><label>Date & Kick-off Time</label><input type="datetime-local" id="a-date"></div>
+      <div class="form-group"><label>Competition</label><select id="a-comp"><option value="Premier League">Premier League</option><option value="FA Cup">FA Cup</option><option value="Carabao Cup">Carabao Cup</option></select></div>
+      <div class="form-group"><label>Opposition</label><input type="text" id="a-opp" placeholder="e.g. Arsenal"></div>
+      <div class="form-group"><label>Home / Away</label><select id="a-ha"><option value="H">Home</option><option value="A">Away</option></select></div>
+      <div class="form-group"><label>API Fixture ID <span style="color:var(--muted);font-weight:400">(from api-football.com — needed for lineup fetch)</span></label>
+        <input type="number" id="a-api-id" placeholder="e.g. 1035055"></div>
+      <button class="btn full" onclick="addFixture()">➕ Add Fixture</button>
+    </div>
+  </div>
+  <!-- TEST MODE TOGGLE -->
+  <div class="card" style="margin-bottom:1rem;border-color:rgba(245,158,11,.35)">
+    <div class="admin-sec-title" style="color:var(--amber)">🧪 Test Mode</div>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:.85rem">Bypass time windows so players can pick at any time. Turn off for the real game.</p>
+    <div style="display:flex;align-items:center;gap:1rem">
+      <button class="btn sm" id="test-mode-btn" onclick="toggleTestMode()"
+        style="background:var(--amber);color:#111">Enable Test Mode</button>
+      <span id="test-mode-status" style="font-size:.82rem;color:var(--muted)">⚪ Test mode OFF — real time windows active</span>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.85rem">
+      <div class="admin-sec-title" style="margin:0">🔢 Pick Order (drag to reorder)</div>
+      <button class="btn sm" onclick="sharePickOrder()" style="background:var(--green)">📋 Copy for WhatsApp</button>
+    </div>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:.85rem">
+      <strong style="color:var(--gold)">Premier League games:</strong> The person who picked 1st moves to last after each game — fully automatic.<br>
+      <strong style="color:var(--gold)">Cup games (FA Cup / Carabao Cup):</strong> No pick order — all players can pick simultaneously as soon as the window opens.<br>
+      You can drag to manually adjust the order if needed.
+    </p>
+    <div class="admin-order-list" id="order-list"></div>
+    <div id="share-output" style="display:none;margin-top:.85rem">
+      <label>Tap to select all, then copy and paste into WhatsApp</label>
+      <textarea id="share-text" readonly
+        style="width:100%;min-height:180px;background:var(--bg2);border:1px solid var(--green);border-radius:8px;
+               padding:.75rem;color:var(--txt);font-family:monospace;font-size:.82rem;line-height:1.6;
+               resize:none;margin-top:.35rem"
+        onclick="this.select()"></textarea>
+      <div style="display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap">
+        <button class="btn sm" style="background:var(--green)" onclick="copyPickOrder()">📋 Copy to Clipboard</button>
+        <button class="btn sm ghost" onclick="document.getElementById('share-output').style.display='none'">✕ Close</button>
+      </div>
+      <div id="copy-confirm" style="font-size:.78rem;color:var(--green);margin-top:.35rem;min-height:1em"></div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:1rem">
+    <div class="admin-sec-title">👥 Players &amp; PINs</div>
+    <div class="row" style="margin-bottom:.85rem;gap:.5rem"><input type="text" id="a-new-player" placeholder="New player name"><button class="btn sm" onclick="addPlayer()">➕ Add</button></div>
+    <div class="players-chips" id="players-chips"></div>
+    <hr>
+    <p style="font-size:.75rem;color:var(--muted);margin-bottom:.75rem">Change a player's 4-digit PIN. Default for all players is 1234.</p>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-end">
+      <div style="flex:1;min-width:140px"><label>Player</label>
+        <select id="a-pin-player"><option value="">Select player...</option></select>
+      </div>
+      <div style="flex:1;min-width:120px"><label>New PIN (4 digits)</label>
+        <input type="password" id="a-pin-val" placeholder="e.g. 5678" maxlength="4" inputmode="numeric">
+      </div>
+      <button class="btn sm" onclick="updatePin()">Save PIN</button>
+    </div>
+    <div id="pin-list" style="margin-top:.85rem;display:flex;flex-wrap:wrap;gap:.4rem"></div>
+  </div>
+  <div class="card" style="margin-bottom:1rem">
+    <div class="admin-sec-title">⚽ Brighton Squad</div>
+    <div class="row" style="margin-bottom:.85rem;gap:.5rem"><input type="text" id="a-new-squad" placeholder="Player name"><button class="btn sm" onclick="addSquadPlayer()">➕ Add</button></div>
+    <div class="players-chips" id="squad-chips"></div>
+  </div>
+  <!-- LINEUP SCREENSHOT -->
+  <div class="card" style="margin-bottom:1rem">
+    <div class="admin-sec-title">📸 Upload Team Screenshot</div>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:.85rem">
+      Take a screenshot of the Brighton lineup from BBC Sport, Sky Sports, the Brighton app or anywhere else.
+      Upload it here and Claude will read the names automatically.
+    </p>
+
+    <!-- Upload area -->
+    <div id="upload-area"
+      onclick="document.getElementById('lineup-img-input').click()"
+      style="border:2px dashed var(--brd);border-radius:12px;padding:2rem;text-align:center;
+             cursor:pointer;transition:all .2s;margin-bottom:.85rem"
+      ondragover="event.preventDefault();this.style.borderColor='var(--blue)'"
+      ondragleave="this.style.borderColor='var(--brd)'"
+      ondrop="handleImageDrop(event)">
+      <div style="font-size:2rem;margin-bottom:.5rem">📸</div>
+      <div style="font-size:.88rem;color:var(--txt);font-weight:500">Tap to upload screenshot</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:.25rem">or drag and drop · JPG, PNG, HEIC supported</div>
+      <input type="file" id="lineup-img-input" accept="image/*" style="display:none" onchange="handleImageSelect(event)">
+    </div>
+
+    <!-- Image preview -->
+    <div id="img-preview" style="display:none;margin-bottom:.85rem">
+      <img id="preview-img" style="max-width:100%;border-radius:8px;border:1px solid var(--brd);max-height:300px;object-fit:contain">
+      <div style="display:flex;gap:.5rem;margin-top:.5rem">
+        <button class="btn gold" onclick="extractLineupFromImage()">🔍 Read Team from Image</button>
+        <button class="btn sm ghost" onclick="clearImage()">✕ Clear</button>
+      </div>
+    </div>
+
+    <!-- Status and result -->
+    <div id="lineup-status" style="font-size:.82rem;color:var(--muted);margin-bottom:.5rem"></div>
+    <div id="lineup-display"></div>
+
+    <!-- Manual override -->
+    <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--brd)">
+      <div style="font-size:.75rem;color:var(--muted);margin-bottom:.5rem;font-weight:500;text-transform:uppercase;letter-spacing:.05em">✏️ Manual override — edit names if needed</div>
+      <textarea id="lineup-paste" rows="3"
+        style="width:100%;background:var(--bg2);border:1px solid var(--brd);border-radius:8px;
+               padding:.65rem;color:var(--txt);font-family:inherit;font-size:.83rem;resize:vertical"
+        placeholder="Names will appear here after scan — edit if needed, one per line&#10;First 11 = starters, rest = subs"></textarea>
+      <div style="display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap">
+        <button class="btn sm" onclick="confirmManualLineup()">✅ Confirm Squad</button>
+        <button class="btn sm ghost" onclick="clearSquadSelection()">✕ Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JSONBIN LIVE SYNC -->
+  <div class="card" style="margin-bottom:1rem;border-color:rgba(34,197,94,.25)">
+    <div class="admin-sec-title" style="color:var(--green)">☁️ Live Sync</div>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:.85rem">
+      Picks, results and the leaderboard sync across all devices automatically every 30 seconds.
+    </p>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+      <button class="btn sm" style="background:var(--green)" onclick="saveAndTestSheetsUrl()">🔌 Test Connection</button>
+      <button class="btn sm ghost" onclick="syncFromSheets()">🔄 Sync Now</button>
+      <div id="sheets-status" style="font-size:.78rem;color:var(--muted)">Auto-syncs every 30s</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="admin-sec-title">🔍 Submitted Picks</div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-end;margin-bottom:.85rem">
+      <div style="flex:1;min-width:140px">
+        <label>Fixture</label>
+        <select id="reset-fix-sel" onchange="populateResetPlayers()">
+          <option value="">Select fixture…</option>
+        </select>
+      </div>
+      <div style="flex:1;min-width:140px">
+        <label>Player</label>
+        <select id="reset-player-sel">
+          <option value="">Select player…</option>
+        </select>
+      </div>
+      <button class="btn sm danger" onclick="resetPlayerPick()">🗑 Reset Pick</button>
+      <button class="btn sm danger" onclick="resetAllPicks()" style="margin-left:.25rem">🗑 Reset All Picks</button>
+    </div>
+    <div id="admin-picks"><div class="empty"><div class="ei">📭</div>No picks yet</div></div>
+  </div>
+</div>
+
+</main>
+
+<!-- PIN OVERLAY -->
+<div class="pin-overlay" id="pin-overlay" style="display:none">
+  <div class="pin-card">
+    <div class="pin-title">Enter <em>PIN</em></div>
+    <div class="pin-sub" id="pin-sub">Logging in as <strong id="pin-who"></strong></div>
+    <div class="pin-dots" id="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-err" id="pin-err"></div>
+    <div class="pin-numpad">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key del" onclick="pinKey('del')">&#9003;</button>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <button class="pin-key del" onclick="pinKey('clear')">CLR</button>
+    </div>
+    <button class="pin-back" onclick="pinCancel()">&#8592; Back to player select</button>
+  </div>
+</div>
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  SEASON DATA — 2025/26
+// ══════════════════════════════════════════
+const ADMIN_PW = 'seagulls2026';
+const API_KEY = 'b8dca95b6019fb291d3d448899afdad2';
+const JSONBIN_KEY = '$2a$10$I9sVKAmPz4UxW0Sj3O95CeShb7CVVcIl5olCVZ.CArxvpOdO79ypC';
+const JSONBIN_BIN = '69ee0920856a682189743c40';
+const JSONBIN_URL = 'https://api.jsonbin.io/v3/b/' + JSONBIN_BIN;
+const API_BASE = 'https://v3.football.api-sports.io';
+const BRIGHTON_TEAM_ID = 51;
+// API key added as query param — allorigins proxy can't forward custom headers
+// API-Football accepts ?token=KEY as an alternative to x-apisports-key header
+
+// Completed results from the spreadsheet
+// winner = name of person who picked correctly, potWon = points awarded
+const SEASON_RESULTS = [
+  {id:1,  datetime:'2025-08-16T15:00', comp:'Premier League', opp:'Fulham',         ha:'H', result:'D 1-1', scorer:"Matt O'Riley",          goalTime:'(pen)',   winner:'',      potWon:0},
+  {id:2,  datetime:'2025-08-24T15:00', comp:'Premier League', opp:'Everton',         ha:'A', result:'L 0-2', scorer:null,                    goalTime:null,      winner:'',      potWon:0},
+  {id:3,  datetime:'2025-08-27T19:45', comp:'Carabao Cup',    opp:'Oxford Utd',      ha:'A', result:'W 6-0', scorer:'Olivier Boscagli',       goalTime:"(13')",   winner:'Claire',potWon:3},
+  {id:4,  datetime:'2025-08-31T15:00', comp:'Premier League', opp:'Man City',        ha:'H', result:'W 2-1', scorer:'James Milner',           goalTime:"(pen,67')",winner:'',     potWon:0},
+  {id:5,  datetime:'2025-09-13T15:00', comp:'Premier League', opp:'Bournemouth',     ha:'A', result:'L 1-2', scorer:'Kaoru Mitoma',           goalTime:"(48')",   winner:'',      potWon:0},
+  {id:6,  datetime:'2025-09-20T15:00', comp:'Premier League', opp:'Tottenham',       ha:'H', result:'D 2-2', scorer:'Yankuba Minteh',         goalTime:'',        winner:'Claire',potWon:3},
+  {id:7,  datetime:'2025-09-23T19:45', comp:'Carabao Cup',    opp:'Barnsley',        ha:'A', result:'W 6-0', scorer:'Diego Gómez',            goalTime:"(9')",    winner:'Mick',  potWon:1},
+  {id:8,  datetime:'2025-09-27T15:00', comp:'Premier League', opp:'Chelsea',         ha:'A', result:'W 3-1', scorer:'Danny Welbeck',          goalTime:"(77')",   winner:'',      potWon:0},
+  {id:9,  datetime:'2025-10-05T14:00', comp:'Premier League', opp:'Wolves',          ha:'A', result:'D 1-1', scorer:'Jan Paul van Hecke',     goalTime:"(86')",   winner:'',      potWon:0},
+  {id:10, datetime:'2025-10-18T15:00', comp:'Premier League', opp:'Newcastle',       ha:'H', result:'W 2-1', scorer:'Danny Welbeck',          goalTime:"(41')",   winner:'Mick',  potWon:3},
+  {id:11, datetime:'2025-10-25T12:30', comp:'Premier League', opp:'Man Utd',         ha:'A', result:'L 2-4', scorer:'Danny Welbeck',          goalTime:"(74')",   winner:'Juliet',potWon:1},
+  {id:12, datetime:'2025-10-29T19:45', comp:'Carabao Cup',    opp:'Arsenal',         ha:'A', result:'L 0-2', scorer:null,                    goalTime:null,      winner:'',      potWon:0},
+  {id:13, datetime:'2025-11-01T15:00', comp:'Premier League', opp:'Leeds',           ha:'H', result:'W 3-0', scorer:'Danny Welbeck',          goalTime:"(11')",   winner:'Mick',  potWon:2},
+  {id:14, datetime:'2025-11-09T14:00', comp:'Premier League', opp:'Crystal Palace',  ha:'A', result:'D 0-0', scorer:null,                    goalTime:null,      winner:'',      potWon:0},
+  {id:15, datetime:'2025-11-22T15:00', comp:'Premier League', opp:'Brentford',       ha:'H', result:'W 2-1', scorer:'Danny Welbeck',          goalTime:"(71')",   winner:'Juliet',potWon:2},
+  {id:16, datetime:'2025-11-30T14:00', comp:'Premier League', opp:'Nottm Forest',    ha:'A', result:'W 2-0', scorer:'Maxim De Cuyper',        goalTime:"(45+1')", winner:'',      potWon:0},
+  {id:17, datetime:'2025-12-03T19:30', comp:'Premier League', opp:'Aston Villa',     ha:'H', result:'L 3-4', scorer:'Jan Paul van Hecke',     goalTime:"(9')",    winner:'',      potWon:0},
+  {id:18, datetime:'2025-12-07T15:00', comp:'Premier League', opp:'West Ham',        ha:'H', result:'D 1-1', scorer:'Georginio Rutter',       goalTime:"(90+')",  winner:'Juliet',potWon:3},
+  {id:19, datetime:'2025-12-13T15:00', comp:'Premier League', opp:'Liverpool',       ha:'A', result:'L 0-2', scorer:null,                    goalTime:null,      winner:'',      potWon:0},
+  {id:20, datetime:'2025-12-20T15:00', comp:'Premier League', opp:'Sunderland',      ha:'H', result:'D 0-0', scorer:null,                    goalTime:null,      winner:'',      potWon:0},
+  {id:21, datetime:'2025-12-27T12:30', comp:'Premier League', opp:'Arsenal',         ha:'A', result:'L 1-2', scorer:'Diego Gómez',            goalTime:"(64')",   winner:'Claire',potWon:3},
+  {id:22, datetime:'2025-12-30T14:30', comp:'Premier League', opp:'West Ham',        ha:'A', result:'D 2-2', scorer:'Danny Welbeck',          goalTime:"(pen,32')",winner:'Mick', potWon:1},
+  {id:23, datetime:'2026-01-03T15:00', comp:'Premier League', opp:'Burnley',         ha:'H', result:'W 2-0', scorer:'Georginio Rutter',       goalTime:"(29')",   winner:'Andy',  potWon:1},
+  {id:24, datetime:'2026-01-07T19:30', comp:'Premier League', opp:'Man City',        ha:'A', result:'D 1-1', scorer:'Kaoru Mitoma',           goalTime:"(60')",   winner:'Claire',potWon:1},
+  {id:25, datetime:'2026-01-11T16:30', comp:'FA Cup',         opp:'Man Utd',         ha:'A', result:'W 2-1', scorer:'Brajan Gruda',           goalTime:"(12')",   winner:'',      potWon:0},
+  {id:26, datetime:'2026-01-19T15:00', comp:'Premier League', opp:'Bournemouth',     ha:'H', result:'D 1-1', scorer:'Charalampos Kostoulas',  goalTime:"(90+1')", winner:'',      potWon:0},
+  {id:27, datetime:'2026-01-24T15:00', comp:'Premier League', opp:'Fulham',          ha:'A', result:'L 1-2', scorer:'Yasin Ayari',            goalTime:"(28')",   winner:'',      potWon:0},
+  {id:28, datetime:'2026-01-31T15:00', comp:'Premier League', opp:'Everton',         ha:'H', result:'D 1-1', scorer:'Pascal Gross',           goalTime:"(73')",   winner:'Juliet',potWon:4},
+  {id:29, datetime:'2026-02-08T14:00', comp:'Premier League', opp:'Crystal Palace',  ha:'H', result:'L 0-1', scorer:null,                    goalTime:null,      winner:'',      potWon:0},
+  {id:30, datetime:'2026-02-11T19:30', comp:'Premier League', opp:'Aston Villa',     ha:'A', result:'L 0-1', scorer:null,                    goalTime:null,      winner:'',      potWon:0},
+  {id:31, datetime:'2026-02-14T15:00', comp:'FA Cup',         opp:'Liverpool',       ha:'A', result:'L 0-3', scorer:null,                    goalTime:null,      winner:'',      potWon:0},
+  {id:32, datetime:'2026-02-21T15:00', comp:'Premier League', opp:'Brentford',       ha:'A', result:'W 2-0', scorer:'Diego Gómez',            goalTime:"(30')",   winner:'Juliet',potWon:4},
+  {id:33, datetime:'2026-03-01T14:00', comp:'Premier League', opp:'Nottm Forest',    ha:'H', result:'W 2-1', scorer:'Diego Gómez',            goalTime:"(6')",    winner:'',      potWon:0},
+  {id:34, datetime:'2026-03-04T19:30', comp:'Premier League', opp:'Arsenal',         ha:'H', result:'L 0-1', scorer:null,                    goalTime:null,      winner:'',      potWon:0},
+  {id:35, datetime:'2026-03-14T15:00', comp:'Premier League', opp:'Sunderland',      ha:'A', result:'W 1-0', scorer:'Yankuba Minteh',         goalTime:"(58')",   winner:'Mick',  potWon:3},
+  {id:36, datetime:'2026-03-21T12:45', comp:'Premier League', opp:'Liverpool',       ha:'H', result:'W 2-1', scorer:'Danny Welbeck',          goalTime:"(14')",   winner:'Cathy', potWon:1},
+  {id:37, datetime:'2026-04-11T14:00', comp:'Premier League', opp:'Burnley',         ha:'A', result:'W 2-0', scorer:'Mats Wieffer',           goalTime:"(43')",   winner:'',      potWon:0},
+  {id:38, datetime:'2026-04-18T16:30', comp:'Premier League', opp:'Tottenham',       ha:'A', result:'D 2-2', scorer:'Kaoru Mitoma',           goalTime:"(45+3')", winner:'',      potWon:0},
+  // ── UPCOMING ──
+  {id:39, datetime:'2026-04-21T20:00', comp:'Premier League', opp:'Chelsea',         ha:'H', result:'TBD',   scorer:null,                    goalTime:null,      winner:null,    potWon:0, apiFixtureId:740928},
+  {id:40, datetime:'2026-05-02T14:00', comp:'Premier League', opp:'Newcastle',       ha:'A', result:'TBD',   scorer:null,                    goalTime:null,      winner:null,    potWon:0},
+  {id:41, datetime:'2026-05-09T14:00', comp:'Premier League', opp:'Wolves',          ha:'H', result:'TBD',   scorer:null,                    goalTime:null,      winner:null,    potWon:0},
+  {id:42, datetime:'2026-05-17T14:00', comp:'Premier League', opp:'Leeds',           ha:'A', result:'TBD',   scorer:null,                    goalTime:null,      winner:null,    potWon:0},
+  {id:43, datetime:'2026-05-24T15:00', comp:'Premier League', opp:'Man Utd',         ha:'H', result:'TBD',   scorer:null,                    goalTime:null,      winner:null,    potWon:0},
+];
+
+// Brighton 2025/26 squad
+const SQUAD = [
+  'Bart Verbruggen','Lewis Dunk','Jan Paul van Hecke','Ferdi Kadioglu','Mats Wieffer',
+  'Maxim De Cuyper','Joel Veltman','Olivier Boscagli','Carlos Baleba','Pascal Gross',
+  'James Milner','Jack Hinshelwood','Yasin Ayari','Diego Gómez','Kaoru Mitoma',
+  'Yankuba Minteh','Georginio Rutter','Danny Welbeck','Charalampos Kostoulas',
+  'Stefanos Tzimas','Brajan Gruda','Matt O\'Riley','Solly March','Jason Steele'
+];
+
+// Points now loaded from JSONBin — not hardcoded
+const SEASON_POINTS = {};
+const SEASON_CORRECT = {};
+
+// Current pot going into Chelsea = 3 (Tottenham rolled over + Burnley rolled over)
+const CURRENT_POT = 3;
+
+// Completed games count for rotation (38 completed games)
+const COMPLETED_GAMES = 38;
+
+// ══════════════════════════════════════════
+//  STATE (only live picks stored in localStorage)
+// ══════════════════════════════════════════
+let S = {
+  currentUser: null,
+  isAdmin: false,
+  players: ['Juliet','Mick','Claire','Andy','Cathy','Masher','Chris','Darren','Paul'],
+  // Base pick order — rotates each game
+  // For game 39 (0-indexed = 38): offset = 38 % 9 = 2
+  // So order starts from index 2: Claire, Andy, Cathy, Masher, Chris, Darren, Paul, Juliet, Mick
+  // Pick order for Chelsea: Andy 1st, Cathy 2nd... Chris last (rotated from Tottenham where Chris was 1st)
+  baseOrder: ['Andy','Cathy','Mick','Paul','Masher','Juliet','Darren','Claire','Chris'],
+  squad: [...SQUAD],
+  fixtures: SEASON_RESULTS,
+  picks: {},       // live picks for upcoming games {fixtureId: {playerName: pick}}
+  points: {},       // loaded from JSONBin on startup
+  correctPicks: {}, // loaded from JSONBin on startup
+  currentPot: CURRENT_POT,
+  fixCounter: 44,
+  // Player PINs — admin can update these. Default 1234 for all.
+  pins: {
+    'Juliet':'1234','Mick':'1234','Claire':'1234','Andy':'1234',
+    'Cathy':'1234','Masher':'1234','Chris':'1234','Darren':'1234','Paul':'1234'
+  },
+  lineupConfirmed: false,
+  testMode: false,  // Admin can enable to bypass time windows
+  lineupFixtureId: null,
+  lineupFetchedAt: null,
+};
+
+function loadState() {
+  try {
+    const s = localStorage.getItem('sfgs_trial_26');
+    if (s) {
+      const p = JSON.parse(s);
+      // Only load live picks and any admin changes — keep season data fixed
+      if (p.picks) S.picks = p.picks;
+      if (p.pins) S.pins = {...S.pins, ...p.pins};
+      if (p.baseOrder) S.baseOrder = p.baseOrder;
+      if (p.players) S.players = p.players;
+      if (p.squad) S.squad = p.squad;
+      if (p.starters) S.starters = p.starters;
+      if (p.subs) S.subs = p.subs;
+      if (p.fixtures) {
+        // Merge — only update TBD fixtures from saved state
+        p.fixtures.forEach(sf => {
+          const existing = S.fixtures.find(f => f.id === sf.id);
+          if (existing && existing.result === 'TBD') {
+            Object.assign(existing, sf);
+          }
+        });
+      }
+    }
+  } catch(e) {}
+  // Safety check — always ensure players list is valid regardless of saved state
+  if (!S.players || S.players.length === 0) {
+    S.players = ['Juliet','Mick','Claire','Andy','Cathy','Masher','Chris','Darren','Paul'];
+  }
+  if (!S.baseOrder || S.baseOrder.length === 0) {
+    S.baseOrder = ['Andy','Cathy','Mick','Paul','Masher','Juliet','Darren','Claire','Chris'];
+  }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem('sfgs_trial_26', JSON.stringify({
+      picks: S.picks,
+      pins: S.pins,
+      baseOrder: S.baseOrder,
+      players: S.players,
+      squad: S.squad,
+      starters: S.starters || [],
+      subs: S.subs || [],
+      fixtures: S.fixtures.filter(f => f.result === 'TBD'),
+    }));
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════
+//  PICK ORDER & TIMING
+// ══════════════════════════════════════════
+function getPickOrder(gameIndex, comp) {
+  // For Cup games: no pick order — all players can pick simultaneously (alphabetical display only)
+  if (comp && comp !== 'Premier League') {
+    return [...S.players].sort((a,b) => a.localeCompare(b));
+  }
+  // For Premier League: baseOrder is the correct order for the current game
+  return [...S.baseOrder];
+}
+
+// Rotate base order after a completed PL game — last person moves to bottom
+// Called automatically when a result is confirmed
+function rotateOrderAfterGame(comp) {
+  if (comp !== 'Premier League') return; // No rotation for cup games
+  // Move first player to the end
+  const rotated = [...S.baseOrder];
+  rotated.push(rotated.shift());
+  S.baseOrder = rotated;
+  saveState();
+}
+
+function getNextFix() {
+  return [...S.fixtures].sort((a,b) => a.datetime.localeCompare(b.datetime))
+    .find(f => f.result === 'TBD') || null;
+}
+
+function getCompletedCount() {
+  return S.fixtures.filter(f => f.result !== 'TBD').length;
+}
+
+function getKickoff(fix) {
+  return fix ? new Date(fix.datetime) : null;
+}
+
+// Timing constants (minutes before kick-off)
+const TEAM_RELEASE_MINS = 75;  // Team released — Player 1 window opens
+const P1_DEADLINE_MINS  = 55;  // Player 1 window closes (same time P2 opens)
+const P2_OPEN_MINS      = 55;  // Player 2 window opens
+const SLOT_MINS         = 5;   // Each player gets a 5 min window
+
+// Full schedule for 20:00 KO example:
+// Player 1: 18:45 → 19:00  (15 min window, team release)
+// Player 2: 19:05 → 19:10  (or immediately if P1 picked early)
+// Player 3: 19:10 → 19:15
+// Player 4: 19:15 → 19:20  ...and so on
+// If previous player picks early → next player's window opens immediately
+
+function getWindowOpen(fix, slotIndex, fp) {
+  const ko = getKickoff(fix);
+  if (!ko) return null;
+
+  // Player 1: opens at team release (75 mins before KO)
+  if (slotIndex === 0) {
+    return new Date(ko.getTime() - TEAM_RELEASE_MINS * 60 * 1000);
+  }
+
+  // Players 2+: base open time
+  // Player 2 = KO-55min, Player 3 = KO-50min, Player 4 = KO-45min, etc.
+  const baseMs = ko.getTime() - P2_OPEN_MINS * 60 * 1000 + (slotIndex - 1) * SLOT_MINS * 60 * 1000;
+
+  // If any earlier player picked early, cascade the window open time down
+  // e.g. if Mick (slot 2) picks at 19:11, Paul (slot 3) can go immediately at 19:11
+  // even though Paul's base window is 19:15
+  const order = getPickOrder(getCompletedCount(), fix ? fix.comp : null);
+
+  // Walk back through all previous players to find the earliest trigger
+  let earliestTrigger = baseMs;
+  for (let i = slotIndex - 1; i >= 0; i--) {
+    const prevPlayer = order[i];
+    const prevPickTime = fp[prevPlayer + '_time'];
+    if (prevPickTime) {
+      // This player picked — their pick time could trigger early open for everyone after them
+      // But only cascade if they picked before their own base window close
+      earliestTrigger = Math.min(earliestTrigger, new Date(prevPickTime).getTime());
+      break; // Only need the most recent picker — cascade is automatic from there
+    }
+  }
+
+  return new Date(earliestTrigger);
+}
+
+function getWindowClose(fix, slotIndex) {
+  const ko = getKickoff(fix);
+  if (!ko) return null;
+
+  // Player 1: closes at KO-55min (same moment P2 opens)
+  if (slotIndex === 0) {
+    return new Date(ko.getTime() - P1_DEADLINE_MINS * 60 * 1000);
+  }
+
+  // Players 2+: each 5 min window
+  // Player 2 closes KO-50min, Player 3 closes KO-45min, etc.
+  const closeMs = ko.getTime() - P2_OPEN_MINS * 60 * 1000 + slotIndex * SLOT_MINS * 60 * 1000;
+  return new Date(Math.min(closeMs, ko.getTime()));
+}
+
+function canPickNow(fix, playerName) {
+  if (!fix || fix.result !== 'TBD') return false;
+  const fp = S.picks[fix.id] || {};
+  if (fp[playerName]) return false; // already picked
+
+  // Test mode: bypass all time window checks
+  if (S.testMode) {
+    const order = getPickOrder(getCompletedCount(), fix.comp);
+    return order.includes(playerName);
+  }
+
+  const now = new Date();
+  const ko = getKickoff(fix);
+  // No KO lockout — picks allowed after KO too (admin checks pick time vs goal time)
+  const order = getPickOrder(getCompletedCount(), fix ? fix.comp : null);
+  const slotIdx = order.indexOf(playerName);
+  if (slotIdx === -1) return false;
+  const fp2 = S.picks[fix.id] || {};
+  if (fp2[playerName]) return false;
+  const windowOpen = getWindowOpen(fix, slotIdx, fp2);
+  // Allow pick if window is open OR if window has passed (late pick — Option A)
+  const windowClose = getWindowClose(fix, slotIdx);
+  const windowHasOpened = windowOpen && now >= windowOpen;
+  const windowHasPassed = windowClose && now > windowClose;
+  if (!windowHasOpened && !windowHasPassed) return false;
+  for (let i = 0; i < slotIdx; i++) {
+    const prev = order[i];
+    if (!fp2[prev]) {
+      const prevClose = getWindowClose(fix, i);
+      if (prevClose && now < prevClose) return false;
+    }
+  }
+  return true;
+}
+
+function getSlotStatus(fix, slotIdx) {
+  if (!fix) return 'waiting';
+  const order = getPickOrder(getCompletedCount(), fix ? fix.comp : null);
+  const player = order[slotIdx];
+  const fp = S.picks[fix.id] || {};
+  if (fp[player]) return 'done';
+
+  // Test mode: all unplayed slots show as active
+  if (S.testMode) return 'active';
+
+  const now = new Date();
+  const ko = getKickoff(fix);
+  // No hard KO lockout — players can still pick after KO
+  const windowOpen = getWindowOpen(fix, slotIdx, fp);
+  const windowClose = getWindowClose(fix, slotIdx);
+  if (windowOpen && now >= windowOpen) return 'active';
+  // Window not yet open — but if their window has passed they can still pick (late)
+  if (windowClose && now > windowClose) return 'late';
+  return 'waiting';
+}
+
+function takenPicks(fixId) {
+  const fp = S.picks[fixId] || {};
+  return Object.entries(fp).filter(([k]) => !k.endsWith('_time')).map(([,v]) => v);
+}
+
+// ══════════════════════════════════════════
+//  FORMAT HELPERS
+// ══════════════════════════════════════════
+function fmtDate(dt) {
+  if (!dt) return '—';
+  return new Date(dt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+}
+function fmtShort(dt) {
+  if (!dt) return '—';
+  return new Date(dt).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+}
+function fmtTime(dt) {
+  if (!dt) return '';
+  return new Date(dt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+function fmtCountdown(ms) {
+  if (ms <= 0) return '00:00';
+  const s = Math.floor(ms/1000);
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), ss = s%60;
+  if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+  return `${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+}
+function compClass(c){return c==='Premier League'?'pl':c==='FA Cup'?'fa':'lc';}
+function compShort(c){return c==='Premier League'?'PL':c==='FA Cup'?'FA':'LC';}
+
+// ══════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════
+function buildLoginGrid() {
+  document.getElementById('player-grid').innerHTML = S.players.map(p =>
+    `<button class="plr-btn" onclick="pinPrompt('${p}')">
+      <div class="plr-initial">${p[0]}</div>${p}
+    </button>`).join('');
+}
+// PIN state
+let _pinUser = null;
+let _pinEntry = '';
+
+function pinPrompt(name) {
+  _pinUser = name;
+  _pinEntry = '';
+  document.getElementById('pin-who').textContent = name;
+  document.getElementById('pin-err').textContent = '';
+  updatePinDots();
+  document.getElementById('pin-overlay').style.display = 'flex';
+}
+
+function pinCancel() {
+  document.getElementById('pin-overlay').style.display = 'none';
+  _pinUser = null;
+  _pinEntry = '';
+}
+
+function pinKey(k) {
+  if (k === 'del') {
+    _pinEntry = _pinEntry.slice(0, -1);
+  } else if (k === 'clear') {
+    _pinEntry = '';
+  } else if (_pinEntry.length < 4) {
+    _pinEntry += k;
+  }
+  updatePinDots();
+  document.getElementById('pin-err').textContent = '';
+  // Auto-submit when 4 digits entered
+  if (_pinEntry.length === 4) {
+    setTimeout(pinSubmit, 150);
+  }
+}
+
+function updatePinDots() {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('pd' + i);
+    dot.classList.toggle('filled', i < _pinEntry.length);
+    dot.classList.remove('error');
+  }
+}
+
+function pinSubmit() {
+  const correct = S.pins[_pinUser] || '1234';
+  if (_pinEntry === correct) {
+    document.getElementById('pin-overlay').style.display = 'none';
+    loginAs(_pinUser);
+  } else {
+    // Shake dots and show error
+    for (let i = 0; i < 4; i++) {
+      const dot = document.getElementById('pd' + i);
+      dot.classList.add('error');
+    }
+    document.getElementById('pin-err').textContent = 'Incorrect PIN — try again';
+    _pinEntry = '';
+    setTimeout(() => { updatePinDots(); }, 600);
+  }
+}
+
+function loginAs(name) {
+  S.currentUser = name; S.isAdmin = false;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('hdr-name').textContent = name;
+  document.getElementById('hdr-ava').textContent = name[0];
+  document.getElementById('nav-admin').style.display = 'none';
+  document.getElementById('home-name').textContent = name;
+  renderAll(); showPage('home');
+}
+function adminLogin() {
+  const pw = document.getElementById('admin-pw').value;
+  const errEl = document.getElementById('admin-pw-err');
+  if (pw === ADMIN_PW) {
+    if (errEl) errEl.textContent = '';
+    S.currentUser = 'Admin'; S.isAdmin = true;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('hdr-name').textContent = 'Admin';
+    document.getElementById('hdr-ava').textContent = '⚙';
+    document.getElementById('nav-admin').style.display = 'inline-block';
+    document.getElementById('home-name').textContent = 'Admin';
+    renderAll(); showPage('admin');
+    toast('✅ Admin access granted', 'ok');
+  } else {
+    if (errEl) errEl.textContent = '❌ Incorrect password';
+    toast('❌ Wrong password', 'err');
+  }
+}
+function logout() {
+  S.currentUser = null; S.isAdmin = false;
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('admin-pw').value = '';
+  buildLoginGrid();
+}
+
+// ══════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.getElementById('nav-' + id).classList.add('active');
+  if (id === 'picks') renderPicksPage();
+  if (id === 'leaderboard') renderLeaderboard();
+  if (id === 'fixtures') renderFixtures('upcoming');
+  if (id === 'results') renderResults();
+  if (id === 'admin') renderAdmin();
+}
+
+// ══════════════════════════════════════════
+//  PICK SLOTS
+// ══════════════════════════════════════════
+function renderPickSlots(fix, containerId, showPickArea) {
+  const container = document.getElementById(containerId);
+  if (!fix) { container.innerHTML = '<div class="empty">No upcoming fixture</div>'; return; }
+  const order = getPickOrder(getCompletedCount(), fix ? fix.comp : null);
+  const fp = S.picks[fix.id] || {};
+  const ko = getKickoff(fix);
+  const now = new Date();
+
+  container.innerHTML = order.map((player, i) => {
+    const status = getSlotStatus(fix, i);
+    const playerPick = fp[player];
+    const windowOpen = getWindowOpen(fix, i, fp);
+    const windowClose = getWindowClose(fix, i);
+    const isMe = player === S.currentUser;
+    let statusLabel = '', statusClass = '';
+    switch(status) {
+      case 'done':    statusLabel='✅ Picked';      statusClass='status-done'; break;
+      case 'active':  statusLabel='🟢 Active';      statusClass='status-active'; break;
+      case 'waiting': statusLabel='⏳ Waiting';     statusClass='status-waiting'; break;
+      case 'locked':  statusLabel='⏰ Pick now';    statusClass='status-active'; break;
+      case 'late':    statusLabel='⏰ Pick now';    statusClass='status-active'; break;
+    }
+    let timeStr = '';
+    if (status === 'waiting' && windowOpen) timeStr = `Opens ${fmtTime(windowOpen)}`;
+    else if (status === 'active' && windowClose) timeStr = `Closes ${fmtTime(windowClose)}`;
+    else if (status === 'done' && fp[player+'_time']) timeStr = `Picked ${fmtTime(fp[player+'_time'])}`;
+
+    return `<div class="pick-slot ${status}-slot">
+      <div class="slot-num">${i+1}</div>
+      <div class="ava" style="width:28px;height:28px;font-size:.72rem;flex-shrink:0">${player[0]}</div>
+      <div style="flex:1;min-width:0">
+        <div class="slot-player">${player}${isMe?' <span class="tag me">you</span>':''}</div>
+        <div class="slot-pick ${playerPick?'confirmed':''}">${playerPick ? '⚽ '+playerPick : '—'}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div class="slot-time ${status==='active'?'active':''}">${timeStr}</div>
+        <span class="slot-status ${statusClass}">${statusLabel}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  if (!showPickArea) return;
+  const areaId = containerId === 'h-pick-slots' ? 'h-pick-area' : 'p-pick-area';
+  const area = document.getElementById(areaId);
+  const myPick = fp[S.currentUser];
+
+  if (myPick) {
+    area.className = 'your-pick-area';
+    area.innerHTML = `<div class="pick-submitted">✅ Your pick is locked in: <strong>${myPick}</strong></div>`;
+    return;
+  }
+  const myIdx = order.indexOf(S.currentUser);
+  const myStatus = myIdx >= 0 ? getSlotStatus(fix, myIdx) : 'locked';
+
+  if (myStatus === 'active' || myStatus === 'late') {
+    const taken = takenPicks(fix.id);
+    // Build optgroup dropdown — starters first, then subs
+    const availStarters = (S.starters||[]).filter(p => !taken.includes(p));
+    const availSubs = (S.subs||[]).filter(p => !taken.includes(p));
+    // Fallback: if no starters/subs split, use full squad
+    const allAvail = [...availStarters, ...availSubs];
+    const fallbackAvail = S.squad.filter(p => !taken.includes(p)).sort();
+
+    let optionsHtml = '<option value="">Choose a player…</option>';
+    if (availStarters.length > 0 || availSubs.length > 0) {
+      if (availStarters.length > 0) {
+        optionsHtml += `<optgroup label="⚽ Starting XI">
+          ${availStarters.map(p=>`<option value="${p}">${p}</option>`).join('')}
+        </optgroup>`;
+      }
+      if (availSubs.length > 0) {
+        optionsHtml += `<optgroup label="🔄 Substitutes">
+          ${availSubs.map(p=>`<option value="${p}">${p}</option>`).join('')}
+        </optgroup>`;
+      }
+    } else {
+      optionsHtml += fallbackAvail.map(p=>`<option value="${p}">${p}</option>`).join('');
+    }
+
+    area.className = 'your-pick-area can-pick';
+    area.innerHTML = `
+      <label style="display:block;font-size:.75rem;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:.5rem">🟢 It's your turn to pick!</label>
+      <div class="pick-form">
+        <div>
+          <label>Select first Brighton goalscorer</label>
+          <select id="pick-sel-${areaId}">
+            ${optionsHtml}
+          </select>
+        </div>
+        <button class="btn gold" onclick="submitPick('${fix.id}','pick-sel-${areaId}')">🔒 Lock In</button>
+      </div>`;
+  } else if (myStatus === 'waiting') {
+    const windowOpen = isCup
+      ? new Date(ko.getTime() - 60*60*1000)
+      : getWindowOpen(fix, myIdx, fp);
+    const msg = isCup
+      ? `⏳ Cup game — all players can pick from <strong>${fmtTime(windowOpen)}</strong> (${TEAM_RELEASE_MINS} mins before KO)`
+      : `⏳ Your pick window opens at <strong>${fmtTime(windowOpen)}</strong> — you're #${myIdx+1} in the order`;
+    area.className = 'your-pick-area';
+    area.innerHTML = `<div class="pick-locked-msg">${msg}</div>`;
+  } else if (myStatus === 'skipped') {
+    area.className = 'your-pick-area';
+    area.innerHTML = `<div class="pick-locked-msg" style="border-color:rgba(245,158,11,.3)">⏭ Your pick window has passed for this game</div>`;
+  } else {
+    const windowStart = new Date(ko.getTime() - TEAM_RELEASE_MINS * 60 * 1000);
+    area.className = 'your-pick-area';
+    area.innerHTML = `<div class="pick-locked-msg">⏳ Pick window opens at ${fmtTime(windowStart)} (60 mins before KO)</div>`;
+  }
+}
+
+// ══════════════════════════════════════════
+//  COUNTDOWNS
+// ══════════════════════════════════════════
+function updateCountdowns() {
+  const fix = getNextFix();
+  if (!fix) return;
+  const ko = getKickoff(fix);
+  const now = new Date();
+  const order = getPickOrder(getCompletedCount(), fix ? fix.comp : null);
+
+  ['h', 'p'].forEach(prefix => {
+    const cdEl = document.getElementById(prefix+'-cd');
+    const labelEl = document.getElementById(prefix+'-cd-label');
+    const openEl = document.getElementById(prefix+'-window-opens');
+    if (!cdEl) return;
+
+    const myIdx = order.indexOf(S.currentUser);
+    const fp = S.picks[fix.id] || {};
+    const myStatus = myIdx >= 0 ? getSlotStatus(fix, myIdx) : 'locked';
+    const myPick = fp[S.currentUser];
+
+    if (myPick) {
+      cdEl.className = 'countdown-display waiting'; cdEl.textContent = 'Picked ✅';
+      labelEl.textContent = 'Your pick is in'; openEl.textContent = ''; return;
+    }
+    if (now >= ko) {
+      cdEl.className = 'countdown-display urgent'; cdEl.textContent = 'In progress';
+      labelEl.textContent = '⚽ Game underway — picks still open'; openEl.textContent = 'Pick will be valid if submitted before first Brighton goal'; return;
+    }
+    if (myStatus === 'active') {
+      const wc = getWindowClose(fix, myIdx);
+      const ms = wc ? wc.getTime() - now.getTime() : 0;
+      cdEl.className = ms < 60000 ? 'countdown-display urgent' : 'countdown-display active';
+      cdEl.textContent = fmtCountdown(ms);
+      labelEl.textContent = '⏱ Your pick window closes in';
+      openEl.textContent = `Window closes at ${fmtTime(wc)}`;
+    } else if (myStatus === 'waiting') {
+      const wo = getWindowOpen(fix, myIdx, fp);
+      const ms = wo ? Math.max(0, wo.getTime() - now.getTime()) : 0;
+      cdEl.className = 'countdown-display waiting';
+      cdEl.textContent = fmtCountdown(ms);
+      labelEl.textContent = `Your pick window opens in (you're #${myIdx+1})`;
+      openEl.textContent = `Your window opens at ${fmtTime(wo)}`;
+    } else {
+      const ws = new Date(ko.getTime() - 60*60*1000);
+      const ms = Math.max(0, ws.getTime() - now.getTime());
+      cdEl.className = 'countdown-display waiting';
+      cdEl.textContent = ms > 0 ? fmtCountdown(ms) : '—';
+      labelEl.textContent = ms > 0 ? `Pick window opens in (${TEAM_RELEASE_MINS} mins before KO)` : 'Pick window status unknown';
+      openEl.textContent = ms > 0 ? `Team release window opens at ${fmtTime(ws)} (${TEAM_RELEASE_MINS} mins before KO)` : '';
+    }
+  });
+}
+
+// ══════════════════════════════════════════
+//  SUBMIT PICK
+// ══════════════════════════════════════════
+function submitPick(fixId, selId) {
+  const fix = S.fixtures.find(f => f.id === parseInt(fixId));
+  const val = document.getElementById(selId)?.value;
+  if (!val) { toast('Please select a player', 'err'); return; }
+  if (!fix) { toast('Fixture not found', 'err'); return; }
+  if (!canPickNow(fix, S.currentUser)) { toast("It's not your pick window yet!", 'err'); return; }
+  const taken = takenPicks(fix.id);
+  if (taken.includes(val)) { toast(`${val} has already been picked!`, 'err'); return; }
+  if (!S.picks[fix.id]) S.picks[fix.id] = {};
+  S.picks[fix.id][S.currentUser] = val;
+  S.picks[fix.id][S.currentUser+'_time'] = new Date().toISOString();
+  saveState();
+  toast(`✅ Pick locked in: ${val}`, 'ok');
+  renderHome(); renderPickSlots(fix, 'h-pick-slots', true);
+  if (document.getElementById('page-picks').classList.contains('active')) renderPicksPage();
+}
+
+// ══════════════════════════════════════════
+//  LEADERBOARD
+// ══════════════════════════════════════════
+function lbSorted() {
+  return S.players.map(n => ({name:n, points:S.points[n]||0, picks:S.correctPicks[n]||0}))
+    .sort((a,b) => b.points - a.points || b.picks - a.picks || a.name.localeCompare(b.name));
+}
+
+function renderLbRows(players) {
+  if (!players.length) return '<div class="empty"><div class="ei">🏆</div>No data</div>';
+  let prev = -1, rank = 0, disp = 0;
+  return players.map(p => {
+    rank++;
+    if (p.points !== prev) disp = rank;
+    prev = p.points;
+    const emoji = disp===1?'🥇':disp===2?'🥈':disp===3?'🥉':disp;
+    const isMe = p.name === S.currentUser;
+    return `<div class="lb-row ${disp===1?'top1':''} ${isMe?'me':''}">
+      <div class="lb-rank">${emoji}</div>
+      <div class="lb-ava">${p.name[0]}</div>
+      <div class="lb-info">
+        <div class="lb-name">${p.name}${isMe?' <span class="tag me">you</span>':''}</div>
+        <div class="lb-sub">${p.picks} correct pick${p.picks!==1?'s':''}</div>
+      </div>
+      <div>
+        <div class="lb-pts">${p.points}</div>
+        <div class="lb-ptslbl">pts</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+//  RENDER FUNCTIONS
+// ══════════════════════════════════════════
+function renderHome() {
+  const fix = getNextFix();
+  const completedCount = getCompletedCount();
+  if (fix) {
+    renderPickSlots(fix, 'h-pick-slots', true);
+  }
+  const u = S.currentUser;
+  // Update lineup badge
+  const badge = document.getElementById('lineup-badge');
+  if (badge) {
+    if (S.lineupConfirmed) {
+      badge.style.background = 'rgba(34,197,94,.1)';
+      badge.style.borderColor = 'rgba(34,197,94,.25)';
+      badge.style.color = 'var(--green)';
+      badge.textContent = '✅ Lineup confirmed';
+    } else {
+      badge.style.background = 'rgba(245,158,11,.1)';
+      badge.style.borderColor = 'rgba(245,158,11,.25)';
+      badge.style.color = 'var(--amber)';
+      badge.textContent = '⏳ Lineup not yet confirmed';
+    }
+  }
+  document.getElementById('s-pts').textContent = S.points[u] || 0;
+  document.getElementById('s-picks').textContent = S.correctPicks[u] || 0;
+  document.getElementById('s-pot').textContent = S.currentPot;
+  const lb = lbSorted();
+  const rank = lb.findIndex(p => p.name === u) + 1;
+  document.getElementById('s-rank').textContent = rank || '—';
+  document.getElementById('home-lb').innerHTML = renderLbRows(lb.slice(0,3));
+}
+
+function renderPicksPage() {
+  const fix = getNextFix();
+  if (fix) renderPickSlots(fix, 'p-pick-slots', true);
+
+  // My history — show what we know from the season data
+  const done = [...S.fixtures].filter(f => f.result !== 'TBD').sort((a,b) => b.datetime.localeCompare(a.datetime));
+  const u = S.currentUser;
+  const tbody = document.getElementById('my-hist');
+  if (!done.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No completed games yet</td></tr>'; return; }
+  tbody.innerHTML = done.map(f => {
+    const myPick = (S.picks[f.id]||{})[u] || '—';
+    const isWin = f.winner === u;
+    const rc = f.result.startsWith('W')?'w':f.result.startsWith('D')?'d':'l';
+    const cc = compClass(f.comp), cs = compShort(f.comp);
+    return `<tr>
+      <td style="font-family:ui-monospace,'SF Mono',Menlo,Monaco,Consolas,monospace;font-size:.72rem;color:var(--muted)">${fmtShort(f.datetime)}</td>
+      <td><span class="comp-tag ${cc}">${cs}</span></td>
+      <td>${f.opp} (${f.ha})</td>
+      <td style="${myPick!=='—'?'color:#7ab3ff;font-weight:600':''}">${myPick}</td>
+      <td style="color:var(--muted);font-size:.8rem">${f.scorer?'⚽ '+f.scorer+(f.goalTime?' '+f.goalTime:''):'—'}</td>
+      <td><span class="fix-res ${rc}">${f.result}</span></td>
+      <td>${isWin?`<span class="pts-bub">${f.potWon}</span>`:'<span style="color:var(--muted)">—</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderLeaderboard() {
+  document.getElementById('main-lb').innerHTML = renderLbRows(lbSorted());
+}
+
+let curFixTab = 'upcoming';
+function showFixTab(tab, btn) {
+  curFixTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFixtures(tab);
+}
+function renderFixtures(tab) {
+  const sorted = [...S.fixtures].sort((a,b) => a.datetime.localeCompare(b.datetime));
+  const list = tab === 'upcoming' ? sorted.filter(f => f.result === 'TBD') : sorted;
+  // Calc pots
+  let pot = 1; const potMap = {};
+  for (const f of sorted) {
+    potMap[f.id] = pot;
+    if (f.result === 'TBD') pot++;
+    else if (f.winner) pot = 1; else pot++;
+  }
+  const el = document.getElementById('fix-list');
+  if (!list.length) { el.innerHTML = '<div class="empty"><div class="ei">📅</div>No fixtures</div>'; return; }
+  el.innerHTML = list.map(f => {
+    const cc = compClass(f.comp), cs = compShort(f.comp);
+    const rc = f.result==='TBD'?'tbd':f.result.startsWith('W')?'w':f.result.startsWith('D')?'d':'l';
+    const myPick = (S.picks[f.id]||{})[S.currentUser];
+    const p = potMap[f.id];
+    return `<div class="fix-row ${f.result==='TBD'?'upcoming':''}">
+      <div class="fix-date">${fmtShort(f.datetime)}<br><span style="font-size:.65rem">${fmtTime(f.datetime)}</span></div>
+      <span class="comp-tag ${cc}">${cs}</span>
+      <div class="fix-opp">${f.opp}</div>
+      <div class="fix-ha">${f.ha}</div>
+      <div class="fix-res ${rc}">${f.result==='TBD'?'TBD':f.result}</div>
+      <div class="fix-scorer">${f.scorer?'⚽ '+f.scorer+(f.goalTime?' '+f.goalTime:''):f.result==='TBD'?(myPick?`<span style="color:#7ab3ff">📌 ${myPick}</span>`:'<span style="color:var(--muted)">No pick</span>'):'—'}</div>
+      <div class="fix-pot">${f.result==='TBD'?`🏆${p}`:f.winner?`✅${f.potWon}`:`🔄${p}`}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderResults() {
+  const done = [...S.fixtures].filter(f => f.result !== 'TBD').sort((a,b) => b.datetime.localeCompare(a.datetime));
+  const tbody = document.getElementById('results-body');
+  if (!done.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No results yet</td></tr>'; return; }
+  tbody.innerHTML = done.map(f => {
+    const cc = compClass(f.comp), cs = compShort(f.comp);
+    const rc = f.result.startsWith('W')?'w':f.result.startsWith('D')?'d':'l';
+    return `<tr>
+      <td style="font-family:ui-monospace,'SF Mono',Menlo,Monaco,Consolas,monospace;font-size:.72rem;color:var(--muted)">${fmtShort(f.datetime)}</td>
+      <td><span class="comp-tag ${cc}">${cs}</span></td>
+      <td>${f.opp} (${f.ha})</td>
+      <td><span class="fix-res ${rc}">${f.result}</span></td>
+      <td style="font-size:.8rem;color:var(--muted)">${f.scorer?'⚽ '+f.scorer+(f.goalTime?' '+f.goalTime:''):'<em>No scorer</em>'}</td>
+      <td>${f.winner?`<span class="win-tag">🏆 ${f.winner}</span>`:'<span class="no-tag">No correct pick</span>'}</td>
+      <td>${f.potWon?`<span class="pts-bub">${f.potWon}</span>`:`<span style="color:var(--muted);font-size:.77rem">🔄 rolled</span>`}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+//  ADMIN
+// ══════════════════════════════════════════
+function renderAdmin() {
+  // Sync test mode button state
+  const btn = document.getElementById('test-mode-btn');
+  const status = document.getElementById('test-mode-status');
+  if (btn && status) {
+    if (S.testMode) {
+      btn.textContent = 'Disable Test Mode';
+      btn.style.background = 'var(--red)';
+      btn.style.color = '#fff';
+      status.textContent = '🟡 Test mode ON — time windows bypassed';
+      status.style.color = 'var(--amber)';
+    } else {
+      btn.textContent = 'Enable Test Mode';
+      btn.style.background = 'var(--amber)';
+      btn.style.color = '#111';
+      status.textContent = '⚪ Test mode OFF — real time windows active';
+      status.style.color = 'var(--muted)';
+    }
+  }
+
+  // Scorer select
+  const sc = document.getElementById('a-scorer');
+  const adminStarters = S.starters || [];
+  const adminSubs = S.subs || [];
+  let adminOpts = '<option value="">Select…</option><option value="no_goal">No Brighton goalscorer</option>';
+  if (adminStarters.length > 0 || adminSubs.length > 0) {
+    if (adminStarters.length) adminOpts += `<optgroup label="⚽ Starting XI">${adminStarters.map(p=>`<option value="${p}">${p}</option>`).join('')}</optgroup>`;
+    if (adminSubs.length) adminOpts += `<optgroup label="🔄 Substitutes">${adminSubs.map(p=>`<option value="${p}">${p}</option>`).join('')}</optgroup>`;
+  } else {
+    adminOpts += S.squad.sort().map(p=>`<option value="${p}">${p}</option>`).join('');
+  }
+  sc.innerHTML = adminOpts;
+
+  // Fixture select — only TBD
+  const fixSel = document.getElementById('a-fix-sel');
+  const upcoming = S.fixtures.filter(f => f.result === 'TBD').sort((a,b) => a.datetime.localeCompare(b.datetime));
+  fixSel.innerHTML = '<option value="">Select…</option>' +
+    upcoming.map(f => `<option value="${f.id}">${fmtShort(f.datetime)} ${fmtTime(f.datetime)} — ${f.opp} (${f.ha})</option>`).join('');
+
+  renderOrderList();
+
+  // PIN player select and list
+  const pinSel = document.getElementById('a-pin-player');
+  if (pinSel) {
+    pinSel.innerHTML = '<option value="">Select player...</option>' +
+      S.players.map(p => `<option value="${p}">${p}</option>`).join('');
+  }
+  const pinList = document.getElementById('pin-list');
+  if (pinList) {
+    pinList.innerHTML = S.players.map(p => {
+      const pin = (S.pins && S.pins[p]) ? S.pins[p] : '1234';
+      const isDefault = pin === '1234';
+      return `<div style="display:flex;align-items:center;gap:.4rem;background:var(--bg2);border:1px solid ${isDefault ? 'var(--brd)' : 'rgba(34,197,94,.3)'};border-radius:8px;padding:.3rem .65rem;font-size:.8rem">
+        <span style="font-weight:600">${p}</span>
+        <span style="color:${isDefault ? 'var(--muted)' : 'var(--green)'}">PIN: ${pin}</span>
+        ${isDefault ? '' : '<span style="font-size:.68rem;color:var(--green)">(custom)</span>'}
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('players-chips').innerHTML = S.players.map(p =>
+    `<div class="player-chip"><span>${p}</span><button class="chip-remove" onclick="removePlayer('${p}')">✕</button></div>`
+  ).join('');
+
+  document.getElementById('squad-chips').innerHTML = S.squad.sort().map(p =>
+    `<div class="player-chip"><span>${p}</span><button class="chip-remove" onclick="removeSquad('${p}')">✕</button></div>`
+  ).join('');
+
+  loadAdminPicks();
+  renderSquadSelector();
+
+  // Populate reset fixture select — all fixtures that have any picks
+  const resetSel = document.getElementById('reset-fix-sel');
+  if (resetSel) {
+    const withPicks = S.fixtures.filter(f => {
+      const fp = S.picks[f.id] || {};
+      return Object.keys(fp).some(k => !k.endsWith('_time'));
+    }).sort((a,b) => a.datetime.localeCompare(b.datetime));
+    const currentVal = resetSel.value;
+    resetSel.innerHTML = '<option value="">Select fixture…</option>' +
+      withPicks.map(f => {
+        const count = Object.keys(S.picks[f.id]||{}).filter(k=>!k.endsWith('_time')).length;
+        return `<option value="${f.id}" ${f.id==currentVal?'selected':''}>${fmtShort(f.datetime)} — ${f.opp} (${count} pick${count!==1?'s':''})</option>`;
+      }).join('');
+    // Repopulate players if a fixture was already selected
+    if (currentVal) populateResetPlayers();
+  }
+}
+
+function renderOrderList() {
+  const completedCount = getCompletedCount();
+  const currentOrder = getPickOrder(completedCount);
+  document.getElementById('order-list').innerHTML = S.baseOrder.map((p, i) => {
+    const suffix = i===0?'st':i===1?'nd':i===2?'rd':'th';
+    return `<div class="order-item" draggable="true" data-idx="${i}"
+      ondragstart="dragStart(event,${i})" ondragover="dragOver(event)" ondrop="dragDrop(event,${i})">
+      <span class="order-handle">⠿</span>
+      <span class="order-num">${i+1}</span>
+      <div class="ava" style="width:26px;height:26px;font-size:.7rem">${p[0]}</div>
+      <span class="order-name">${p}</span>
+      <span style="font-size:.72rem;color:var(--gold)">Picks ${i+1}${suffix} for next game</span>
+    </div>`;
+  }).join('');
+}
+
+let dragIdx = null;
+function dragStart(e, i) { dragIdx = i; }
+function dragOver(e) { e.preventDefault(); }
+function dragDrop(e, i) {
+  e.preventDefault();
+  if (dragIdx === null || dragIdx === i) return;
+  const arr = [...S.baseOrder];
+  const [moved] = arr.splice(dragIdx, 1);
+  arr.splice(i, 0, moved);
+  S.baseOrder = arr;
+  saveState(); renderOrderList();
+  toast('✅ Pick order updated', 'ok');
+  dragIdx = null;
+}
+
+function loadAdminPicks() {
+  const fixId = parseInt(document.getElementById('a-fix-sel').value);
+  const el = document.getElementById('admin-picks');
+  if (!fixId) { el.innerHTML = '<div class="empty"><div class="ei">📭</div>Select a fixture</div>'; return; }
+  const fp = S.picks[fixId] || {};
+  const entries = Object.entries(fp).filter(([k]) => !k.endsWith('_time'));
+  if (!entries.length) { el.innerHTML = '<div class="empty"><div class="ei">📭</div>No picks yet</div>'; return; }
+  el.innerHTML = entries.map(([player, pick]) =>
+    `<div class="admin-pick-row"><span style="font-weight:600">${player}</span><span style="color:var(--muted)">⚽ ${pick}</span></div>`
+  ).join('');
+}
+
+function confirmResult() {
+  const fixId = parseInt(document.getElementById('a-fix-sel').value);
+  const result = document.getElementById('a-result').value.trim();
+  const scorer = document.getElementById('a-scorer').value;
+  const goalTime = document.getElementById('a-time').value.trim();
+  if (!fixId || !result || !scorer) { toast('Please fill in all fields', 'err'); return; }
+  const fix = S.fixtures.find(f => f.id === fixId);
+  if (!fix) return;
+  fix.result = result;
+  fix.scorer = scorer === 'no_goal' ? null : scorer;
+  fix.goalTime = goalTime || null;
+  const fp = S.picks[fixId] || {};
+  let winner = null;
+  if (fix.scorer) {
+    const e = Object.entries(fp).find(([k,v]) => !k.endsWith('_time') && v === fix.scorer);
+    winner = e ? e[0] : null;
+  }
+  // Disqualify any picks submitted after the first goal time
+  if (fix.scorer && goalTime && goalTime.trim()) {
+    const goalMins = parseGoalTime(goalTime);
+    if (goalMins !== null) {
+      const ko = new Date(fix.datetime);
+      const goalMs = ko.getTime() + goalMins * 60 * 1000;
+      const fp = S.picks[fix.id] || {};
+      Object.keys(fp).filter(k => !k.endsWith('_time')).forEach(player => {
+        const pickTime = fp[player + '_time'];
+        if (pickTime && new Date(pickTime) > new Date(goalMs)) {
+          console.log(`${player} pick disqualified — picked after goal at ${goalTime}`);
+          if (winner === player) winner = null; // disqualify if they were the winner
+        }
+      });
+    }
+  }
+
+  fix.winner = winner;
+  // Rotate pick order if PL game
+  rotateOrderAfterGame(fix.comp);
+  // Calc pot
+  const sorted = [...S.fixtures].sort((a,b) => a.datetime.localeCompare(b.datetime));
+  let pot = 1;
+  for (const f of sorted) {
+    if (f.id === fixId) { fix.potWon = winner ? pot : 0; break; }
+    if (f.result === 'TBD') break;
+    if (f.winner) pot = 1; else pot++;
+  }
+  if (!winner) fix.potWon = 0;
+  // Update live points
+  if (winner) {
+    S.points[winner] = (S.points[winner] || 0) + fix.potWon;
+    S.correctPicks[winner] = (S.correctPicks[winner] || 0) + 1;
+    S.currentPot = 1;
+  } else {
+    S.currentPot++;
+  }
+  saveState();
+  toast(winner ? `🏆 ${winner} wins ${fix.potWon} pts!` : '✅ Confirmed — pot rolls over', 'ok');
+  renderAll(); renderAdmin();
+}
+
+function addFixture() {
+  const dt = document.getElementById('a-date').value;
+  const comp = document.getElementById('a-comp').value;
+  const opp = document.getElementById('a-opp').value.trim();
+  const ha = document.getElementById('a-ha').value;
+  if (!dt || !opp) { toast('Fill in all fields', 'err'); return; }
+  const apiId = parseInt(document.getElementById('a-api-id')?.value) || null;
+  S.fixtures.push({id:S.fixCounter++,datetime:dt,comp,opp,ha,result:'TBD',scorer:null,goalTime:null,winner:null,potWon:0,apiFixtureId:apiId});
+  if(document.getElementById('a-api-id')) document.getElementById('a-api-id').value='';
+  saveState(); toast(`✅ ${opp} added`, 'ok'); renderAdmin();
+  document.getElementById('a-date').value = '';
+  document.getElementById('a-opp').value = '';
+}
+
+function addPlayer() {
+  const n = document.getElementById('a-new-player').value.trim();
+  if (!n) { toast('Enter a name', 'err'); return; }
+  if (S.players.includes(n)) { toast('Already exists', 'err'); return; }
+  S.players.push(n); S.baseOrder.push(n);
+  saveState(); buildLoginGrid(); renderAdmin();
+  document.getElementById('a-new-player').value = '';
+  toast(`✅ ${n} added`, 'ok');
+}
+function removePlayer(n) {
+  if (!confirm(`Remove ${n}?`)) return;
+  S.players = S.players.filter(p => p !== n);
+  S.baseOrder = S.baseOrder.filter(p => p !== n);
+  saveState(); buildLoginGrid(); renderAdmin();
+  toast(`${n} removed`, 'ok');
+}
+function addSquadPlayer() {
+  const n = document.getElementById('a-new-squad').value.trim();
+  if (!n) { toast('Enter a name', 'err'); return; }
+  S.squad.push(n); saveState(); renderAdmin();
+  document.getElementById('a-new-squad').value = '';
+  toast(`✅ ${n} added`, 'ok');
+}
+function removeSquad(n) {
+  S.squad = S.squad.filter(p => p !== n);
+  saveState(); renderAdmin(); toast(`${n} removed`, 'ok');
+}
+
+// ══════════════════════════════════════════
+//  RENDER ALL
+// ══════════════════════════════════════════
+
+// ══════════════════════════════════════════
+//  API-FOOTBALL LINEUP INTEGRATION
+// ══════════════════════════════════════════
+
+async function apiFetch(endpoint) {
+  // Call our Netlify serverless function which proxies to API-Football server-side.
+  // This avoids all CORS issues as the function runs on the server not the browser.
+  const proxyUrl = `/.netlify/functions/lineup?endpoint=${encodeURIComponent(endpoint)}`;
+  try {
+    const res = await fetch(proxyUrl);
+    if (!res.ok) throw new Error(`Function error: ${res.status}`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    if (data.errors && Object.keys(data.errors).length > 0) {
+      throw new Error(Object.values(data.errors)[0]);
+    }
+    return data;
+  } catch(e) {
+    throw new Error(e.message || 'Network request failed');
+  }
+}
+
+async function fetchLineup() {
+  const statusEl = document.getElementById('lineup-status');
+  const displayEl = document.getElementById('lineup-display');
+  const btn = event.target;
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Fetching…';
+  statusEl.textContent = 'Contacting API-Football…';
+  statusEl.style.color = 'var(--amber)';
+  displayEl.innerHTML = '';
+
+  try {
+    // Step 1: Find the next Brighton fixture
+    const fix = getNextFix();
+    if (!fix) {
+      throw new Error('No upcoming fixture found in app');
+    }
+
+    // Get the date of the next fixture to search for it
+    const fixDate = fix.datetime.split('T')[0];
+    statusEl.textContent = `Looking up fixture for ${fix.opp} on ${fixDate}…`;
+
+    // Fetch Brighton's next fixture from API-Football
+    // Use the API fixture ID stored against the fixture by admin
+    // Admin must enter the fixture ID when adding fixtures for next season
+    if (!fix.apiFixtureId) {
+      throw new Error(`No API Fixture ID set for ${fix.opp}. Please add it in the Admin panel under Fixtures.`);
+    }
+    const fixtureId = fix.apiFixtureId;
+    statusEl.textContent = `Using fixture ID ${fixtureId} for ${fix.opp}. Fetching lineup…`;
+
+    // Step 2: Fetch the lineup
+    const lineupData = await apiFetch(`/lineups?fixture=${fixtureId}`);
+
+    if (!lineupData.response || lineupData.response.length === 0) {
+      // Lineup not yet released
+      statusEl.textContent = '⏳ Lineup not yet released by the club';
+      statusEl.style.color = 'var(--amber)';
+      displayEl.innerHTML = `<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:9px;padding:.85rem;font-size:.85rem;color:var(--amber)">
+        ⏳ The lineup for this fixture hasn't been released yet.<br>
+        <span style="color:var(--muted);font-size:.78rem">Teams usually release lineups ~60 minutes before kick-off. Try again closer to kick-off time.</span>
+      </div>`;
+      btn.disabled = false;
+      btn.textContent = '🔄 Fetch Latest Lineup';
+      return;
+    }
+
+    // Step 3: Find Brighton's lineup
+    const brightonLineup = lineupData.response.find(team =>
+      team.team.id === BRIGHTON_TEAM_ID ||
+      team.team.name.toLowerCase().includes('brighton')
+    );
+
+    if (!brightonLineup) {
+      throw new Error('Brighton lineup not found in response');
+    }
+
+    // Step 4: Extract starters and subs
+    const starters = brightonLineup.startXI.map(p => p.player.name);
+    const subs = brightonLineup.substitutes.map(p => p.player.name);
+    const allPlayers = [...starters, ...subs];
+    const formation = brightonLineup.formation;
+
+    // Step 5: Update the squad in state
+    S.squad = allPlayers;
+    S.starters = starters;
+    S.subs = subs;
+    S.lineupConfirmed = true;
+    S.lineupFixtureId = fixtureId;
+    S.lineupFetchedAt = new Date().toISOString();
+    saveState();
+
+    // Step 6: Update admin squad display
+    renderAdmin();
+
+    // Step 7: Show confirmed lineup in admin
+    statusEl.textContent = `✅ Lineup confirmed! Formation: ${formation} · Fetched at ${fmtTime(new Date())}`;
+    statusEl.style.color = 'var(--green)';
+
+    displayEl.innerHTML = `
+      <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:12px;padding:1rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;flex-wrap:wrap;gap:.5rem">
+          <div style="font-size:.8rem;font-weight:600;color:var(--green)">✅ Brighton Lineup Confirmed · ${formation}</div>
+          <div style="font-size:.72rem;color:var(--muted)">Fetched ${fmtTime(new Date())}</div>
+        </div>
+        <div style="margin-bottom:.75rem">
+          <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:.4rem">Starting XI</div>
+          <div style="display:flex;flex-wrap:wrap;gap:.35rem">
+            ${starters.map(p => `<span style="background:rgba(0,87,184,.18);border:1px solid rgba(0,87,184,.3);border-radius:16px;padding:.2rem .6rem;font-size:.8rem;color:#7ab3ff">${p}</span>`).join('')}
+          </div>
+        </div>
+        <div>
+          <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:.4rem">Substitutes</div>
+          <div style="display:flex;flex-wrap:wrap;gap:.35rem">
+            ${subs.map(p => `<span style="background:var(--bg2);border:1px solid var(--brd);border-radius:16px;padding:.2rem .6rem;font-size:.8rem;color:var(--muted)">${p}</span>`).join('')}
+          </div>
+        </div>
+      </div>`;
+
+    toast(`✅ Lineup fetched! ${starters.length} starters + ${subs.length} subs`, 'ok');
+
+  } catch (err) {
+    console.error('Lineup fetch error:', err);
+    statusEl.textContent = `❌ Error: ${err.message}`;
+    statusEl.style.color = 'var(--red)';
+    displayEl.innerHTML = `<div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.18);border-radius:9px;padding:.85rem;font-size:.83rem;color:var(--red)">
+      ❌ ${err.message}<br>
+      <span style="color:var(--muted);font-size:.78rem">Check your API key is correct and you have remaining requests. Free plan allows 100 requests/day.</span>
+    </div>`;
+    toast('❌ Failed to fetch lineup', 'err');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '🔄 Fetch Latest Lineup';
+}
+
+// Auto-refresh lineup every 5 minutes when within 90 mins of kick-off
+function scheduleLineupRefresh() {
+  const fix = getNextFix();
+  if (!fix) return;
+  const ko = getKickoff(fix);
+  const now = new Date();
+  const minsToKO = (ko - now) / 60000;
+  // Within 90 mins of KO and lineup not yet confirmed — auto-fetch every 5 mins
+  if (minsToKO > 0 && minsToKO <= 90 && !S.lineupConfirmed) {
+    fetchLineupSilent();
+  }
+}
+
+async function fetchLineupSilent() {
+  // Same as fetchLineup but no UI updates — just updates squad if lineup found
+  try {
+    const fix = getNextFix();
+    if (!fix) return;
+    // Use stored API fixture ID
+    if (!fix.apiFixtureId) return; // No fixture ID stored yet — skip
+    const fixtureId = fix.apiFixtureId;
+    const lineupData = await apiFetch(`/lineups?fixture=${fixtureId}`);
+    if (!lineupData.response?.length) return;
+    const brightonLineup = lineupData.response.find(t =>
+      t.team.id === BRIGHTON_TEAM_ID || t.team.name.toLowerCase().includes('brighton')
+    );
+    if (!brightonLineup) return;
+    const allPlayers = [
+      ...brightonLineup.startXI.map(p => p.player.name),
+      ...brightonLineup.substitutes.map(p => p.player.name)
+    ];
+    S.squad = allPlayers;
+    S.starters = brightonLineup.startXI.map(p => p.player.name);
+    S.subs = brightonLineup.substitutes.map(p => p.player.name);
+    S.lineupConfirmed = true;
+    S.lineupFixtureId = fixtureId;
+    S.lineupFetchedAt = new Date().toISOString();
+    saveState();
+    toast('✅ Lineup auto-fetched!', 'ok');
+  } catch(e) {
+    // Silent fail
+  }
+}
+
+
+function toggleTestMode() {
+  S.testMode = !S.testMode;
+  saveState();
+  const btn = document.getElementById('test-mode-btn');
+  const status = document.getElementById('test-mode-status');
+  if (S.testMode) {
+    btn.textContent = 'Disable Test Mode';
+    btn.style.background = 'var(--red)';
+    btn.style.color = '#fff';
+    status.textContent = '🟡 Test mode ON — time windows bypassed';
+    status.style.color = 'var(--amber)';
+    toast('🧪 Test mode ON — all players can pick now', 'ok');
+  } else {
+    btn.textContent = 'Enable Test Mode';
+    btn.style.background = 'var(--amber)';
+    btn.style.color = '#111';
+    status.textContent = '⚪ Test mode OFF — real time windows active';
+    status.style.color = 'var(--muted)';
+    toast('✅ Test mode OFF — real windows restored', 'ok');
+  }
+  renderAll();
+  if (document.getElementById('page-picks').classList.contains('active')) renderPicksPage();
+}
+
+
+function updatePin() {
+  const player = document.getElementById('a-pin-player').value;
+  const pin = document.getElementById('a-pin-val').value.trim();
+  if (!player) { toast('Please select a player', 'err'); return; }
+  if (!/^\d{4}$/.test(pin)) { toast('PIN must be exactly 4 digits', 'err'); return; }
+  if (!S.pins) S.pins = {};
+  S.pins[player] = pin;
+  saveState();
+  document.getElementById('a-pin-val').value = '';
+  document.getElementById('a-pin-player').value = '';
+  renderAdmin();
+  toast(`✅ PIN updated for ${player}`, 'ok');
+}
+
+
+function hardReset() {
+  if (confirm('This will clear all saved picks and reset the app. Continue?')) {
+    localStorage.removeItem('sfgs_trial_26');
+    location.reload();
+  }
+}
+
+function hardReset() {
+  if (confirm('This will clear saved data and reload. Continue?')) {
+    localStorage.removeItem('sfgs_trial_26');
+    location.reload();
+  }
+}
+
+
+function populateResetPlayers() {
+  const fixId = parseInt(document.getElementById('reset-fix-sel').value);
+  const sel = document.getElementById('reset-player-sel');
+  sel.innerHTML = '<option value="">Select player…</option>';
+  if (!fixId) return;
+  const fp = S.picks[fixId] || {};
+  const players = Object.keys(fp).filter(k => !k.endsWith('_time'));
+  if (!players.length) {
+    sel.innerHTML = '<option value="">No picks submitted yet</option>';
+    return;
+  }
+  players.forEach(p => {
+    sel.innerHTML += `<option value="${p}">${p} → ${fp[p]}</option>`;
+  });
+  // Also refresh the picks display
+  loadAdminPicks();
+}
+
+function resetAllPicks() {
+  const fixId = parseInt(document.getElementById('reset-fix-sel').value);
+  if (!fixId) { toast('Please select a fixture first', 'err'); return; }
+  const fix = S.fixtures.find(f => f.id === fixId);
+  const count = Object.keys(S.picks[fixId]||{}).filter(k=>!k.endsWith('_time')).length;
+  if (!count) { toast('No picks to reset', 'err'); return; }
+  if (!confirm(`Reset ALL ${count} pick(s) for ${fix.opp}? This cannot be undone.`)) return;
+  delete S.picks[fixId];
+  saveState();
+  populateResetPlayers();
+  renderAdmin();
+  renderAll();
+  toast(`✅ All picks reset for ${fix.opp}`, 'ok');
+}
+
+function resetPlayerPick() {
+  const fixId = parseInt(document.getElementById('reset-fix-sel').value);
+  const player = document.getElementById('reset-player-sel').value;
+  if (!fixId) { toast('Please select a fixture', 'err'); return; }
+  if (!player) { toast('Please select a player', 'err'); return; }
+  const fix = S.fixtures.find(f => f.id === fixId);
+  const pick = (S.picks[fixId] || {})[player];
+  if (!pick) { toast('No pick found for this player', 'err'); return; }
+  if (!confirm(`Reset ${player}'s pick of "${pick}" for ${fix.opp}?`)) return;
+  delete S.picks[fixId][player];
+  delete S.picks[fixId][player + '_time'];
+  saveState();
+  populateResetPlayers();
+  renderAdmin();
+  renderAll();
+  toast(`✅ ${player}'s pick reset`, 'ok');
+}
+
+
+function sharePickOrder() {
+  const fix = getNextFix();
+  const order = getPickOrder(getCompletedCount(), fix ? fix.comp : 'Premier League');
+  const isCup = fix && fix.comp !== 'Premier League';
+  const ko = fix ? getKickoff(fix) : null;
+
+  let msg = '';
+
+  if (fix) {
+    msg += `🔵⚪ SEAGULLS FIRST SCORER 🔵⚪\n`;
+    msg += `Brighton ${fix.ha === 'H' ? 'vs' : '@'} ${fix.opp}\n`;
+    msg += `📅 ${fmtDate(fix.datetime)} · KO ${fmtTime(fix.datetime)}\n`;
+    msg += `🏆 Pot: ${S.currentPot} pt${S.currentPot !== 1 ? 's' : ''}\n\n`;
+  }
+
+  if (isCup) {
+    msg += `⚽ CUP GAME — No pick order\n`;
+    msg += `All players can pick from ${ko ? fmtTime(new Date(ko.getTime() - TEAM_RELEASE_MINS*60*1000)) : '75 mins before KO'}\n`;
+    msg += `First come first served — unique picks only\n`;
+  } else {
+    msg += `🎯 PICK ORDER:\n`;
+    order.forEach((player, i) => {
+      const suffix = i===0?'st':i===1?'nd':i===2?'rd':'th';
+      let windowStr = '';
+      if (ko && i === 0) {
+        windowStr = ` — window ${fmtTime(new Date(ko.getTime() - TEAM_RELEASE_MINS*60*1000))}–${fmtTime(new Date(ko.getTime() - P2_OPEN_MINS*60*1000))}`;
+      } else if (ko) {
+        const openMs = ko.getTime() - P2_OPEN_MINS*60*1000 + (i-1)*SLOT_MINS*60*1000;
+        const closeMs = ko.getTime() - P2_OPEN_MINS*60*1000 + i*SLOT_MINS*60*1000;
+        windowStr = ` — window ${fmtTime(new Date(openMs))}–${fmtTime(new Date(Math.min(closeMs, ko.getTime())))}`;
+      }
+      msg += `${i+1}${suffix} ${player}${windowStr}\n`;
+    });
+  }
+
+  msg += `\n📌 Unique picks only — no two players can pick the same player`;
+
+  const el = document.getElementById('share-text');
+  el.value = msg;
+  document.getElementById('share-output').style.display = 'block';
+  document.getElementById('copy-confirm').textContent = '';
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function copyPickOrder() {
+  const text = document.getElementById('share-text').value;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      document.getElementById('copy-confirm').textContent = '✅ Copied to clipboard — paste into WhatsApp!';
+      toast('✅ Copied to clipboard!', 'ok');
+    }).catch(() => {
+      document.getElementById('share-text').select();
+      document.getElementById('copy-confirm').textContent = 'Select all the text above and copy manually';
+    });
+  } else {
+    document.getElementById('share-text').select();
+    document.getElementById('copy-confirm').textContent = 'Select all the text above and copy manually';
+  }
+}
+
+
+function parseGoalTime(goalTime) {
+  // Parse goal times like "23'", "45+2'", "90+5'" into total minutes
+  if (!goalTime) return null;
+  const match = goalTime.match(/(\d+)(?:\+(\d+))?/);
+  if (!match) return null;
+  return parseInt(match[1]) + (match[2] ? parseInt(match[2]) : 0);
+}
+
+
+async function fetchLastLineup() {
+  const statusEl = document.getElementById('lineup-status');
+  const displayEl = document.getElementById('lineup-display');
+
+  statusEl.textContent = '🧪 Test mode — fetching last Brighton game lineup…';
+  statusEl.style.color = 'var(--amber)';
+  displayEl.innerHTML = '';
+
+  try {
+    // Use the most recently completed Brighton fixture for testing
+    // Brighton 3-0 Chelsea, 21 Apr 2026 — API-Football fixture ID 740928
+    const TEST_FIXTURE_ID = 740928;
+    const fixtureId = TEST_FIXTURE_ID;
+    const opponent = 'Chelsea (21 Apr 2026)';
+    const fixtureDate = '2026-04-21';
+
+    statusEl.textContent = `Testing with Brighton vs ${opponent} — fetching lineup…`;
+
+    // Fetch the lineup
+    const lineupData = await apiFetch(`/lineups?fixture=${fixtureId}`);
+
+    if (!lineupData.response || lineupData.response.length === 0) {
+      throw new Error('No lineup data found for this fixture');
+    }
+
+    const brightonLineup = lineupData.response.find(t =>
+      t.team.id === BRIGHTON_TEAM_ID || t.team.name.toLowerCase().includes('brighton')
+    );
+
+    if (!brightonLineup) throw new Error('Brighton lineup not found in response');
+
+    const starters = brightonLineup.startXI.map(p => p.player.name);
+    const subs = brightonLineup.substitutes.map(p => p.player.name);
+    const formation = brightonLineup.formation;
+
+    statusEl.textContent = `✅ Test successful! Last game vs ${opponent} — Formation: ${formation}`;
+    statusEl.style.color = 'var(--green)';
+
+    displayEl.innerHTML = `
+      <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:12px;padding:1rem;">
+        <div style="font-size:.8rem;font-weight:600;color:var(--green);margin-bottom:.5rem">
+          ✅ API connection working! · Brighton vs ${opponent} · ${fixtureDate} · ${formation}
+        </div>
+        <div style="font-size:.75rem;color:var(--amber);margin-bottom:.75rem">
+          ⚠️ This is test data from the last game — squad has NOT been updated
+        </div>
+        <div style="margin-bottom:.75rem">
+          <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:.4rem">Starting XI</div>
+          <div style="display:flex;flex-wrap:wrap;gap:.35rem">
+            ${starters.map(p => `<span style="background:rgba(0,87,184,.18);border:1px solid rgba(0,87,184,.3);border-radius:16px;padding:.2rem .6rem;font-size:.8rem;color:#7ab3ff">${p}</span>`).join('')}
+          </div>
+        </div>
+        <div>
+          <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:.4rem">Substitutes</div>
+          <div style="display:flex;flex-wrap:wrap;gap:.35rem">
+            ${subs.map(p => `<span style="background:var(--bg2);border:1px solid var(--brd);border-radius:16px;padding:.2rem .6rem;font-size:.8rem;color:var(--muted)">${p}</span>`).join('')}
+          </div>
+        </div>
+      </div>`;
+
+    toast(`✅ API test passed! ${starters.length} starters + ${subs.length} subs fetched`, 'ok');
+
+  } catch(err) {
+    statusEl.textContent = `❌ Test failed: ${err.message}`;
+    statusEl.style.color = 'var(--red)';
+    displayEl.innerHTML = `<div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.18);border-radius:9px;padding:.85rem;font-size:.83rem;color:var(--red)">
+      ❌ ${err.message}<br>
+      <span style="color:var(--muted);font-size:.78rem">Check the browser console for more detail.</span>
+    </div>`;
+    toast('❌ API test failed', 'err');
+  }
+}
+
+
+function renderSquadSelector() {
+  const el = document.getElementById('squad-selector');
+  if (!el) return;
+  const fullSquad = [
+    'Bart Verbruggen','Jason Steele','Lewis Dunk','Jan Paul van Hecke','Ferdi Kadioglu',
+    'Mats Wieffer','Maxim De Cuyper','Joel Veltman','Olivier Boscagli','Carlos Baleba',
+    'Pascal Gross','James Milner','Jack Hinshelwood','Yasin Ayari','Diego Gómez',
+    'Kaoru Mitoma','Yankuba Minteh','Georginio Rutter','Danny Welbeck','Charalampos Kostoulas',
+    'Stefanos Tzimas','Brajan Gruda','Matt O\'Riley','Solly March'
+  ];
+  el.innerHTML = fullSquad.map(p => {
+    const inStarters = (S.starters||[]).includes(p);
+    const inSubs = (S.subs||[]).includes(p);
+    const selected = inStarters || inSubs;
+    const type = inStarters ? 'starter' : inSubs ? 'sub' : '';
+    return `<label style="display:flex;align-items:center;gap:.3rem;background:${selected ? (inStarters ? 'rgba(0,87,184,.2)' : 'rgba(107,147,187,.1)') : 'var(--bg2)'};
+      border:1px solid ${selected ? 'var(--blue)' : 'var(--brd)'};border-radius:20px;
+      padding:.22rem .6rem;font-size:.78rem;cursor:pointer;transition:all .18s">
+      <input type="checkbox" value="${p}" data-type="${type}"
+        ${selected ? 'checked' : ''}
+        onchange="updateSquadChip(this)"
+        style="cursor:pointer">
+      ${p}${inStarters ? ' <span style="color:var(--gold);font-size:.65rem">XI</span>' : inSubs ? ' <span style="color:var(--muted);font-size:.65rem">SUB</span>' : ''}
+    </label>`;
+  }).join('');
+}
+
+function updateSquadChip(cb) {
+  // Toggle handled by confirmManualLineup
+}
+
+function selectAllStarters() {
+  document.querySelectorAll('#squad-selector input[type=checkbox]').forEach(cb => {
+    cb.checked = true;
+  });
+}
+
+function clearSquadSelection() {
+  document.querySelectorAll('#squad-selector input[type=checkbox]').forEach(cb => {
+    cb.checked = false;
+  });
+  S.starters = []; S.subs = []; S.squad = []; S.lineupConfirmed = false;
+  saveState(); renderSquadSelector();
+  document.getElementById('lineup-status').textContent = '';
+  document.getElementById('lineup-display').innerHTML = '';
+}
+
+function confirmManualLineup() {
+  let starters = [];
+  let allSelected = [];
+
+  // Get checked players from selector
+  document.querySelectorAll('#squad-selector input[type=checkbox]:checked').forEach(cb => {
+    allSelected.push(cb.value);
+  });
+
+  // Also parse pasted names
+  const pasted = document.getElementById('lineup-paste').value.trim();
+  if (pasted) {
+    const pastedNames = pasted.split(/[,\n]/).map(n => n.trim()).filter(n => n.length > 0);
+    pastedNames.forEach(name => {
+      if (!allSelected.includes(name)) allSelected.push(name);
+    });
+  }
+
+  if (allSelected.length === 0) {
+    toast('Please select or enter at least one player', 'err');
+    return;
+  }
+
+  // First 11 are starters, rest are subs (or all starters if <= 11)
+  const newStarters = allSelected.slice(0, 11);
+  const newSubs = allSelected.slice(11);
+
+  S.starters = newStarters;
+  S.subs = newSubs;
+  S.squad = allSelected;
+  S.lineupConfirmed = true;
+  S.lineupFetchedAt = new Date().toISOString();
+  saveState();
+
+  document.getElementById('lineup-status').textContent = '✅ Squad confirmed!';
+  document.getElementById('lineup-status').style.color = 'var(--green)';
+  document.getElementById('lineup-paste').value = '';
+
+  document.getElementById('lineup-display').innerHTML = `
+    <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:12px;padding:1rem;margin-top:.5rem">
+      <div style="font-weight:600;color:var(--green);margin-bottom:.75rem">✅ Squad confirmed — ${allSelected.length} players</div>
+      <div style="margin-bottom:.6rem">
+        <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:.35rem">⚽ Starting XI</div>
+        <div style="display:flex;flex-wrap:wrap;gap:.3rem">
+          ${newStarters.map(p => `<span style="background:rgba(0,87,184,.18);border:1px solid rgba(0,87,184,.3);border-radius:16px;padding:.18rem .55rem;font-size:.78rem;color:#7ab3ff">${p}</span>`).join('')}
+        </div>
+      </div>
+      ${newSubs.length ? `<div>
+        <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:.35rem">🔄 Substitutes</div>
+        <div style="display:flex;flex-wrap:wrap;gap:.3rem">
+          ${newSubs.map(p => `<span style="background:var(--bg2);border:1px solid var(--brd);border-radius:16px;padding:.18rem .55rem;font-size:.78rem;color:var(--muted)">${p}</span>`).join('')}
+        </div>
+      </div>` : ''}
+    </div>`;
+
+  renderAll();
+  toast(`✅ Squad set — ${newStarters.length} starters, ${newSubs.length} subs`, 'ok');
+}
+
+
+let _lineupImageBase64 = null;
+
+function handleImageSelect(event) {
+  const file = event.target.files[0];
+  if (file) loadImageFile(file);
+}
+
+function handleImageDrop(event) {
+  event.preventDefault();
+  document.getElementById('upload-area').style.borderColor = 'var(--brd)';
+  const file = event.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) loadImageFile(file);
+}
+
+function loadImageFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    _lineupImageBase64 = e.target.result.split(',')[1]; // base64 only
+    const mimeType = file.type || 'image/jpeg';
+    document.getElementById('preview-img').src = e.target.result;
+    document.getElementById('img-preview').style.display = 'block';
+    document.getElementById('upload-area').style.display = 'none';
+    document.getElementById('lineup-status').textContent = 'Image loaded — tap "Read Team from Image" to scan';
+    document.getElementById('lineup-status').style.color = 'var(--amber)';
+    // Store mime type for API call
+    _lineupImageBase64 = JSON.stringify({ data: e.target.result.split(',')[1], mediaType: mimeType });
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearImage() {
+  _lineupImageBase64 = null;
+  document.getElementById('img-preview').style.display = 'none';
+  document.getElementById('upload-area').style.display = 'block';
+  document.getElementById('lineup-img-input').value = '';
+  document.getElementById('lineup-status').textContent = '';
+  document.getElementById('lineup-display').innerHTML = '';
+  document.getElementById('lineup-paste').value = '';
+}
+
+function parseLineupText(rawText) {
+  // Full Brighton squad — used to fuzzy-match OCR output and filter non-players
+  const FULL_SQUAD = [
+    'Verbruggen','Steele','Dunk','Van Hecke','Veltman','Kadioglu','De Cuyper',
+    'Boscagli','Wieffer','Baleba','Gross','Milner','Hinshelwood','Ayari','Gomez',
+    'Gómez','Mitoma','Minteh','Rutter','Welbeck','Kostoulas','Tzimas','Gruda',
+    'O\'Riley','March','Igor','Julio','Steele','Fabian','Enciso'
+  ];
+
+  // Use the full squad stored in app state if available
+  const squadNames = (S.squad && S.squad.length > 0)
+    ? S.squad.map(p => p.split(' ').pop()) // get surnames
+    : FULL_SQUAD;
+
+  // Fuzzy match — check if a word from OCR is close enough to a known name
+  function fuzzyMatch(word, names) {
+    const w = word.toLowerCase().replace(/[^a-z]/g, '');
+    if (w.length < 3) return null;
+    for (const name of names) {
+      const n = name.toLowerCase().replace(/[^a-z]/g, '');
+      if (n.length < 3) continue;
+      // Exact match
+      if (w === n) return name;
+      // One contains the other (handles vanHecke → Van Hecke)
+      if (w.includes(n) || n.includes(w)) return name;
+      // Levenshtein distance <= 2 for longer names
+      if (n.length >= 5 && levenshtein(w, n) <= 2) return name;
+    }
+    return null;
+  }
+
+  function levenshtein(a, b) {
+    const dp = Array.from({length: a.length+1}, (_, i) =>
+      Array.from({length: b.length+1}, (_, j) => i === 0 ? j : j === 0 ? i : 0)
+    );
+    for (let i = 1; i <= a.length; i++)
+      for (let j = 1; j <= b.length; j++)
+        dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1]
+          : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+    return dp[a.length][b.length];
+  }
+
+  // Split ALL text into words and try to match each against squad
+  const allText = rawText.replace(/\n/g, ' ');
+  const words = allText.split(/[\s,;|]+/);
+
+  // Find subs section boundary
+  const subsIdx = allText.toUpperCase().search(/SUBS?[:\s]/);
+  const starterText = subsIdx > -1 ? allText.substring(0, subsIdx) : allText;
+  const subsText = subsIdx > -1 ? allText.substring(subsIdx) : '';
+
+  const matchedStarters = new Set();
+  const matchedSubs = new Set();
+
+  // Match starters
+  starterText.split(/[\s,;|]+/).forEach(word => {
+    const match = fuzzyMatch(word, squadNames);
+    if (match) matchedStarters.add(match);
+  });
+
+  // Match subs
+  if (subsText) {
+    subsText.split(/[\s,;|]+/).forEach(word => {
+      const match = fuzzyMatch(word, squadNames);
+      if (match && !matchedStarters.has(match)) matchedSubs.add(match);
+    });
+  }
+
+  // Map matched surnames back to full names from S.squad
+  function fullName(surname) {
+    if (!S.squad || S.squad.length === 0) return surname;
+    const found = S.squad.find(p => p.toLowerCase().includes(surname.toLowerCase()));
+    return found || surname;
+  }
+
+  const starters = [...matchedStarters].map(fullName);
+  const subs = [...matchedSubs].map(fullName);
+
+  // Trim starters to 11 if needed, move extras to subs
+  if (starters.length > 11) {
+    subs.unshift(...starters.splice(11));
+  }
+
+  return { starters, subs };
+}
+
+
+async function extractLineupFromImage() {
+  if (!_lineupImageBase64) { toast('Please upload an image first', 'err'); return; }
+
+  const statusEl = document.getElementById('lineup-status');
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '⏳ Reading image…';
+  statusEl.textContent = 'Loading OCR engine (first time may take a few seconds)…';
+  statusEl.style.color = 'var(--amber)';
+
+  try {
+    const imgData = JSON.parse(_lineupImageBase64);
+
+    // Use Tesseract.js — runs entirely in the browser, no server needed, completely free
+    statusEl.textContent = 'Running OCR on image…';
+    const { createWorker } = Tesseract;
+    const worker = await createWorker('eng');
+    const imgSrc = 'data:' + imgData.mediaType + ';base64,' + imgData.data;
+    const { data: { text } } = await worker.recognize(imgSrc);
+    await worker.terminate();
+
+    // Parse the raw OCR text to extract player names
+    const parsed = parseLineupText(text);
+
+    if (parsed.error) throw new Error(parsed.error);
+
+    const starters = parsed.starters || [];
+    const subs = parsed.subs || [];
+    const all = [...starters, ...subs];
+
+    if (all.length === 0) throw new Error('No player names found in image');
+
+    // Populate the textarea for review
+    document.getElementById('lineup-paste').value = all.join('\n');
+
+    statusEl.textContent = '✅ Found ' + starters.length + ' starters + ' + subs.length + ' subs — check names below and confirm';
+    statusEl.style.color = 'var(--green)';
+
+    let displayHtml = '<div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:.85rem;margin-bottom:.5rem">';
+    displayHtml += '<div style="font-size:.8rem;font-weight:600;color:var(--green);margin-bottom:.6rem">✅ Claude read the lineup — review and confirm below</div>';
+    if (starters.length) {
+      displayHtml += '<div style="margin-bottom:.5rem"><div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:.3rem">⚽ Starters</div>';
+      displayHtml += '<div style="font-size:.82rem">' + starters.join(', ') + '</div></div>';
+    }
+    if (subs.length) {
+      displayHtml += '<div><div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:.3rem">🔄 Subs</div>';
+      displayHtml += '<div style="font-size:.82rem;color:var(--muted)">' + subs.join(', ') + '</div></div>';
+    }
+    displayHtml += '</div>';
+    document.getElementById('lineup-display').innerHTML = displayHtml;
+
+    // Pre-populate starters/subs so confirm just needs a tap
+    S.starters = starters;
+    S.subs = subs;
+
+    toast('✅ Found ' + all.length + ' players — confirm to lock in', 'ok');
+
+  } catch(err) {
+    statusEl.textContent = '❌ ' + err.message;
+    statusEl.style.color = 'var(--red)';
+    toast('❌ Could not read image', 'err');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '🔍 Read Team from Image';
+}
+
+
+// ══════════════════════════════════════════
+//  JSONBIN SYNC
+// ══════════════════════════════════════════
+
+async function dbGet() {
+  const res = await fetch(JSONBIN_URL + '/latest', {
+    headers: { 'X-Master-Key': JSONBIN_KEY }
+  });
+  const json = await res.json();
+  if (json.message) throw new Error(json.message);
+  return json.record || {};
+}
+
+async function dbWrite(data) {
+  const res = await fetch(JSONBIN_URL, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY },
+    body: JSON.stringify(data)
+  });
+  const json = await res.json();
+  if (json.message) throw new Error(json.message);
+  return json;
+}
+
+// Read-modify-write helper for all DB operations
+async function dbPost(action, body) {
+  const current = await dbGet();
+
+  if (action === 'savePick') {
+    const { fixtureId, player, pick, pickTime } = body;
+    if (!current.picks) current.picks = {};
+    if (!current.picks[fixtureId]) current.picks[fixtureId] = {};
+    // Check already picked
+    if (current.picks[fixtureId][player]) return { error: player + ' has already picked' };
+    // Check unique pick
+    const taken = Object.entries(current.picks[fixtureId])
+      .filter(([k]) => !k.endsWith('_time')).map(([,v]) => v);
+    if (taken.includes(pick)) return { error: pick + ' has already been picked by someone else' };
+    current.picks[fixtureId][player] = pick;
+    current.picks[fixtureId][player + '_time'] = pickTime || new Date().toISOString();
+    await dbWrite(current);
+    return { success: true };
+  }
+
+  if (action === 'saveResult') {
+    if (!current.results) current.results = {};
+    current.results[body.fixtureId] = {
+      result: body.result, scorer: body.scorer || null,
+      goalTime: body.goalTime || null, winner: body.winner || null,
+      potWon: body.potWon || 0, confirmedAt: new Date().toISOString()
+    };
+    if (!current.points) current.points = {};
+    if (!current.correctPicks) current.correctPicks = {};
+    if (body.winner) {
+      current.points[body.winner] = (current.points[body.winner] || 0) + (body.potWon || 0);
+      current.correctPicks[body.winner] = (current.correctPicks[body.winner] || 0) + 1;
+    }
+    await dbWrite(current);
+    return { success: true };
+  }
+
+  if (action === 'resetPick') {
+    if (current.picks && current.picks[body.fixtureId]) {
+      if (body.player) {
+        delete current.picks[body.fixtureId][body.player];
+        delete current.picks[body.fixtureId][body.player + '_time'];
+      } else {
+        delete current.picks[body.fixtureId];
+      }
+      await dbWrite(current);
+    }
+    return { success: true };
+  }
+
+  if (action === 'savePin') {
+    if (!current.pins) current.pins = {};
+    current.pins[body.player] = body.pin;
+    await dbWrite(current);
+    return { success: true };
+  }
+
+  throw new Error('Unknown action: ' + action);
+}
+
+async function syncFromSheets() {
+  const statusEl = document.getElementById('sheets-status');
+  if (statusEl) statusEl.textContent = 'Syncing…';
+  try {
+    const data = await dbGet();
+    applyRemoteData(data);
+    renderAll();
+    if (statusEl) {
+      statusEl.textContent = '✅ Synced at ' + fmtTime(new Date());
+      statusEl.style.color = 'var(--green)';
+    }
+    toast('✅ Synced!', 'ok');
+  } catch(err) {
+    if (statusEl) { statusEl.textContent = '❌ ' + err.message; statusEl.style.color = 'var(--red)'; }
+    toast('❌ Sync failed: ' + err.message, 'err');
+  }
+}
+
+async function saveAndTestSheetsUrl() {
+  // For JSONBin — just test the connection directly
+  const statusEl = document.getElementById('sheets-status');
+  if (statusEl) statusEl.textContent = 'Testing connection…';
+  try {
+    const data = await dbGet();
+    applyRemoteData(data);
+    renderAll();
+    if (statusEl) { statusEl.textContent = '✅ Connected to JSONBin!'; statusEl.style.color = 'var(--green)'; }
+    toast('✅ Database connected!', 'ok');
+  } catch(err) {
+    if (statusEl) { statusEl.textContent = '❌ ' + err.message; statusEl.style.color = 'var(--red)'; }
+    toast('❌ ' + err.message, 'err');
+  }
+}
+
+function applyRemoteData(data) {
+  // Merge picks
+  if (data.picks) {
+    Object.entries(data.picks).forEach(([fixId, fixPicks]) => {
+      if (!S.picks[fixId]) S.picks[fixId] = {};
+      Object.assign(S.picks[fixId], fixPicks);
+    });
+  }
+  // Merge results into fixtures
+  if (data.results) {
+    Object.entries(data.results).forEach(([fixId, r]) => {
+      const fix = S.fixtures.find(f => f.id == fixId);
+      if (fix && r.result && r.result !== 'TBD') {
+        fix.result  = r.result;
+        fix.scorer  = r.scorer  || fix.scorer;
+        fix.goalTime = r.goalTime || fix.goalTime;
+        fix.winner  = r.winner  || fix.winner;
+        fix.potWon  = r.potWon  || fix.potWon;
+      }
+    });
+  }
+  // Merge points
+  if (data.points) {
+    Object.entries(data.points).forEach(([name, pts]) => { S.points[name] = pts; });
+  }
+  if (data.correctPicks) {
+    Object.entries(data.correctPicks).forEach(([name, c]) => { S.correctPicks[name] = c; });
+  }
+  // Merge PINs
+  if (data.pins) {
+    Object.entries(data.pins).forEach(([name, pin]) => { S.pins[name] = pin; });
+  }
+  saveState();
+}
+
+async function savePick_toSheets(fixtureId, player, pick) {
+  try {
+    const res = await dbPost('savePick', { fixtureId, player, pick, pickTime: new Date().toISOString() });
+    if (res.error) toast('⚠️ ' + res.error, 'err');
+  } catch(err) { console.warn('DB pick save failed:', err.message); }
+}
+
+async function saveResult_toSheets(fix) {
+  try {
+    await dbPost('saveResult', {
+      fixtureId:  fix.id,
+      result:     fix.result,
+      scorer:     fix.scorer,
+      goalTime:   fix.goalTime,
+      winner:     fix.winner,
+      potWon:     fix.potWon
+    });
+  } catch(err) { console.warn('DB result save failed:', err.message); }
+}
+
+async function autoSync() {
+  if (!S.currentUser) return;
+  try {
+    const data = await dbGet();
+    if (!data.picks) return;
+    let changed = false;
+    Object.entries(data.picks).forEach(([fixId, fixPicks]) => {
+      if (!S.picks[fixId]) S.picks[fixId] = {};
+      Object.entries(fixPicks).forEach(([k, v]) => {
+        if (S.picks[fixId][k] !== v) { S.picks[fixId][k] = v; changed = true; }
+      });
+    });
+    if (changed) {
+      saveState();
+      const fix = getNextFix();
+      if (fix) {
+        const hDropdown = document.getElementById('pick-sel-h-pick-area');
+        if (!hDropdown || !hDropdown.value) renderPickSlots(fix, 'h-pick-slots', true);
+      }
+    }
+  } catch(e) { /* silent */ }
+}
+
+
+function renderAll() { renderHome(); }
+
+function toast(msg, type='ok') {
+  const c = document.getElementById('toasts');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  c.appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+loadState();
+buildLoginGrid();
+
+// Sync from JSONBin on startup — loads all results, points and picks
+(async () => {
+  try {
+    const data = await dbGet();
+    applyRemoteData(data);
+    buildLoginGrid(); // rebuild in case pins changed
+    console.log('Startup sync complete');
+  } catch(e) {
+    console.warn('Startup sync failed:', e.message);
+  }
+})();
+
+// Tick every second
+setInterval(() => {
+  try {
+    const fix = getNextFix();
+    if (fix) {
+      updateCountdowns();
+      if (Date.now() % 10000 < 1100) {
+        // Don't re-render pick slots if player has a value selected in the dropdown
+        // — this would destroy their selection before they can click Lock In
+        const homeDropdown = document.getElementById('pick-sel-h-pick-area');
+        const picksDropdown = document.getElementById('pick-sel-p-pick-area');
+        const homeHasSelection = homeDropdown && homeDropdown.value;
+        const picksHasSelection = picksDropdown && picksDropdown.value;
+        if (!homeHasSelection) renderPickSlots(fix, 'h-pick-slots', true);
+        if (!picksHasSelection && document.getElementById('page-picks').classList.contains('active')) {
+          renderPickSlots(fix, 'p-pick-slots', true);
+        }
+      }
+    }
+    // Auto-fetch lineup every 5 mins within 90 mins of KO
+    if (Date.now() % 300000 < 1100) {
+      scheduleLineupRefresh();
+    }
+  } catch(e) { /* suppress ticker errors */ }
+}, 1000);
+
+// Auto-sync picks from Google Sheets every 30 seconds
+setInterval(() => { try { autoSync(); } catch(e) {} }, 30000);
+
+// Global error handler to suppress cross-origin script errors on iOS
+window.addEventListener('error', function(e) {
+  if (e.message === 'Script error.' || e.message === 'Uncaught Error: Script error.') {
+    e.preventDefault();
+    return true;
+  }
+});
+window.addEventListener('unhandledrejection', function(e) {
+  e.preventDefault();
+});
+</script>
+</body>
+</html>
