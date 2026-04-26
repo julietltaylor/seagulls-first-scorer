@@ -586,6 +586,36 @@ hr{border:none;border-top:1px solid var(--brd);margin:1rem 0;}
     </div>
   </div>
 
+  <!-- ADMIN PICK ENTRY -->
+  <div class="card" style="margin-bottom:1rem;border-color:rgba(255,215,0,.25)">
+    <div class="admin-sec-title" style="color:var(--gold)">📝 Enter Pick on Behalf of Player</div>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:.85rem">
+      Use this to enter picks submitted via WhatsApp while players transition to the app.
+    </p>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-end;margin-bottom:.75rem">
+      <div style="flex:1;min-width:140px">
+        <label>Fixture</label>
+        <select id="admin-entry-fix" onchange="updateAdminPickDropdown()">
+          <option value="">Select fixture…</option>
+        </select>
+      </div>
+      <div style="flex:1;min-width:140px">
+        <label>Player</label>
+        <select id="admin-entry-player">
+          <option value="">Select player…</option>
+        </select>
+      </div>
+      <div style="flex:1;min-width:160px">
+        <label>First goalscorer pick</label>
+        <select id="admin-entry-pick">
+          <option value="">Select Brighton player…</option>
+        </select>
+      </div>
+      <button class="btn gold" onclick="adminEnterPick()">✅ Submit Pick</button>
+    </div>
+    <div id="admin-entry-status" style="font-size:.82rem;min-height:1.2em"></div>
+  </div>
+
   <div class="card">
     <div class="admin-sec-title">🔍 Submitted Picks</div>
     <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-end;margin-bottom:.85rem">
@@ -1514,6 +1544,19 @@ function renderAdmin() {
 
   loadAdminPicks();
   renderSquadSelector();
+
+  // Populate admin entry fixture select — upcoming TBD fixtures
+  const entryFixSel = document.getElementById('admin-entry-fix');
+  if (entryFixSel) {
+    const upcomingFix = S.fixtures.filter(f => f.result === 'TBD').sort((a,b) => a.datetime.localeCompare(b.datetime));
+    entryFixSel.innerHTML = '<option value="">Select fixture…</option>' +
+      upcomingFix.map(f => `<option value="${f.id}">${fmtShort(f.datetime)} — ${f.opp} (${f.ha})</option>`).join('');
+    // Auto-select next fixture
+    if (upcomingFix.length > 0 && !entryFixSel.value) {
+      entryFixSel.value = upcomingFix[0].id;
+      updateAdminPickDropdown();
+    }
+  }
 
   // Populate reset fixture select — all fixtures that have any picks
   const resetSel = document.getElementById('reset-fix-sel');
@@ -2611,6 +2654,83 @@ async function autoSync() {
       }
     }
   } catch(e) { /* silent */ }
+}
+
+
+function updateAdminPickDropdown() {
+  const fixId = parseInt(document.getElementById('admin-entry-fix').value);
+  const playerSel = document.getElementById('admin-entry-player');
+  const pickSel = document.getElementById('admin-entry-pick');
+
+  // Populate players — only those who haven't picked yet for this fixture
+  const fp = S.picks[fixId] || {};
+  const alreadyPicked = Object.keys(fp).filter(k => !k.endsWith('_time'));
+  playerSel.innerHTML = '<option value="">Select player…</option>' +
+    S.players
+      .filter(p => !alreadyPicked.includes(p))
+      .map(p => `<option value="${p}">${p}</option>`)
+      .join('');
+
+  // Populate squad — only players not already taken
+  const taken = takenPicks(fixId);
+  const availStarters = (S.starters || []).filter(p => !taken.includes(p));
+  const availSubs = (S.subs || []).filter(p => !taken.includes(p));
+  const fallback = S.squad.filter(p => !taken.includes(p)).sort();
+
+  let opts = '<option value="">Select Brighton player…</option>';
+  if (availStarters.length > 0 || availSubs.length > 0) {
+    if (availStarters.length) opts += `<optgroup label="⚽ Starting XI">${availStarters.map(p => `<option value="${p}">${p}</option>`).join('')}</optgroup>`;
+    if (availSubs.length) opts += `<optgroup label="🔄 Substitutes">${availSubs.map(p => `<option value="${p}">${p}</option>`).join('')}</optgroup>`;
+  } else {
+    opts += fallback.map(p => `<option value="${p}">${p}</option>`).join('');
+  }
+  pickSel.innerHTML = opts;
+}
+
+async function adminEnterPick() {
+  const fixId = parseInt(document.getElementById('admin-entry-fix').value);
+  const player = document.getElementById('admin-entry-player').value;
+  const pick = document.getElementById('admin-entry-pick').value;
+  const statusEl = document.getElementById('admin-entry-status');
+
+  if (!fixId) { statusEl.textContent = '❌ Please select a fixture'; statusEl.style.color = 'var(--red)'; return; }
+  if (!player) { statusEl.textContent = '❌ Please select a player'; statusEl.style.color = 'var(--red)'; return; }
+  if (!pick) { statusEl.textContent = '❌ Please select a pick'; statusEl.style.color = 'var(--red)'; return; }
+
+  // Check not already picked
+  const fp = S.picks[fixId] || {};
+  if (fp[player]) { statusEl.textContent = '❌ ' + player + ' has already picked'; statusEl.style.color = 'var(--red)'; return; }
+
+  // Check unique
+  const taken = takenPicks(fixId);
+  if (taken.includes(pick)) { statusEl.textContent = '❌ ' + pick + ' has already been picked'; statusEl.style.color = 'var(--red)'; return; }
+
+  statusEl.textContent = 'Saving…';
+  statusEl.style.color = 'var(--muted)';
+
+  // Save locally
+  if (!S.picks[fixId]) S.picks[fixId] = {};
+  S.picks[fixId][player] = pick;
+  S.picks[fixId][player + '_time'] = new Date().toISOString();
+  saveState();
+
+  // Save to JSONBin
+  try {
+    await savePick_toSheets(fixId, player, pick);
+    statusEl.textContent = '✅ Pick entered: ' + player + ' → ' + pick;
+    statusEl.style.color = 'var(--green)';
+    toast('✅ ' + player + ' → ' + pick, 'ok');
+  } catch(err) {
+    statusEl.textContent = '✅ Saved locally (sync failed: ' + err.message + ')';
+    statusEl.style.color = 'var(--amber)';
+  }
+
+  // Reset dropdowns and refresh
+  document.getElementById('admin-entry-player').value = '';
+  document.getElementById('admin-entry-pick').value = '';
+  renderAll();
+  loadAdminPicks();
+  updateAdminPickDropdown();
 }
 
 
