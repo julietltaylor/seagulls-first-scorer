@@ -2586,16 +2586,16 @@ function applyRemoteData(data) {
       Object.assign(S.picks[fixId], fixPicks);
     });
   }
-  // Merge results into fixtures
+  // Merge results into fixtures — use == for id comparison (string vs int safe)
   if (data.results) {
     Object.entries(data.results).forEach(([fixId, r]) => {
-      const fix = S.fixtures.find(f => f.id == fixId);
+      const fix = S.fixtures.find(f => String(f.id) === String(fixId));
       if (fix && r.result && r.result !== 'TBD') {
-        fix.result  = r.result;
-        fix.scorer  = r.scorer  || fix.scorer;
+        fix.result   = r.result;
+        fix.scorer   = r.scorer   || fix.scorer;
         fix.goalTime = r.goalTime || fix.goalTime;
-        fix.winner  = r.winner  || fix.winner;
-        fix.potWon  = r.potWon  || fix.potWon;
+        fix.winner   = r.winner   !== undefined ? r.winner : fix.winner;
+        fix.potWon   = r.potWon   || fix.potWon;
       }
     });
   }
@@ -2752,11 +2752,14 @@ loadState();
 buildLoginGrid();
 
 // Sync from JSONBin on startup — loads all results, points and picks
+// Must call renderAll() after so the UI reflects the synced data
 (async () => {
   try {
     const data = await dbGet();
     applyRemoteData(data);
-    buildLoginGrid(); // rebuild in case pins changed
+    buildLoginGrid();
+    // If already logged in (e.g. returning user), re-render with fresh data
+    if (S.currentUser) renderAll();
     console.log('Startup sync complete');
   } catch(e) {
     console.warn('Startup sync failed:', e.message);
