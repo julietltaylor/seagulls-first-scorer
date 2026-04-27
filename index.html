@@ -2611,6 +2611,22 @@ function applyRemoteData(data) {
   if (data.pins) {
     Object.entries(data.pins).forEach(([name, pin]) => { S.pins[name] = pin; });
   }
+
+  // Merge TBD fixtures from JSONBin — these are the upcoming games
+  // JSONBin is the source of truth for upcoming fixtures so results update properly
+  if (data.fixtures && data.fixtures.length > 0) {
+    data.fixtures.forEach(remoteFix => {
+      const existing = S.fixtures.find(f => String(f.id) === String(remoteFix.id));
+      if (existing) {
+        // Update existing fixture with remote data
+        Object.assign(existing, remoteFix);
+      } else {
+        // Add new fixture not in hardcoded list
+        S.fixtures.push(remoteFix);
+      }
+    });
+  }
+
   saveState();
 }
 
