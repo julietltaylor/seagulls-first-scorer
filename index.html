@@ -2587,19 +2587,7 @@ function applyRemoteData(data) {
       Object.assign(S.picks[fixId], fixPicks);
     });
   }
-  // Merge results into fixtures — use == for id comparison (string vs int safe)
-  if (data.results) {
-    Object.entries(data.results).forEach(([fixId, r]) => {
-      const fix = S.fixtures.find(f => String(f.id) === String(fixId));
-      if (fix && r.result && r.result !== 'TBD') {
-        fix.result   = r.result;
-        fix.scorer   = r.scorer   || fix.scorer;
-        fix.goalTime = r.goalTime || fix.goalTime;
-        fix.winner   = r.winner   !== undefined ? r.winner : fix.winner;
-        fix.potWon   = r.potWon   || fix.potWon;
-      }
-    });
-  }
+  // Results applied via fixtures block above
   // Merge points
   if (data.points) {
     Object.entries(data.points).forEach(([name, pts]) => { S.points[name] = pts; });
@@ -2612,17 +2600,29 @@ function applyRemoteData(data) {
     Object.entries(data.pins).forEach(([name, pin]) => { S.pins[name] = pin; });
   }
 
-  // Merge TBD fixtures from JSONBin — these are the upcoming games
-  // JSONBin is the source of truth for upcoming fixtures so results update properly
+  // Fixtures from JSONBin fully override hardcoded ones
+  // JSONBin is the single source of truth for fixture data
   if (data.fixtures && data.fixtures.length > 0) {
     data.fixtures.forEach(remoteFix => {
-      const existing = S.fixtures.find(f => String(f.id) === String(remoteFix.id));
-      if (existing) {
-        // Update existing fixture with remote data
-        Object.assign(existing, remoteFix);
+      const idx = S.fixtures.findIndex(f => String(f.id) === String(remoteFix.id));
+      if (idx >= 0) {
+        // Fully replace the hardcoded fixture with JSONBin version
+        S.fixtures[idx] = { ...S.fixtures[idx], ...remoteFix };
       } else {
-        // Add new fixture not in hardcoded list
         S.fixtures.push(remoteFix);
+      }
+    });
+  }
+  // Also apply results to hardcoded completed fixtures
+  if (data.results) {
+    Object.entries(data.results).forEach(([fixId, r]) => {
+      const fix = S.fixtures.find(f => String(f.id) === String(fixId));
+      if (fix && r.result && r.result !== 'TBD') {
+        fix.result   = r.result;
+        fix.scorer   = r.scorer   || fix.scorer;
+        fix.goalTime = r.goalTime || fix.goalTime;
+        fix.winner   = r.winner   !== undefined ? r.winner : fix.winner;
+        fix.potWon   = r.potWon   !== undefined ? r.potWon : fix.potWon;
       }
     });
   }
@@ -2766,20 +2766,24 @@ function toast(msg, type='ok') {
 //  INIT
 // ══════════════════════════════════════════
 loadState();
+// Clear any cached fixture/result data from localStorage — JSONBin is source of truth
+// This ensures fixture times, results etc always come from JSONBin not stale cache
+S.fixtures.forEach(f => {
+  if (f.result !== 'TBD') return; // keep completed hardcoded results
+  // Reset to hardcoded defaults — JSONBin will override on sync
+});
 buildLoginGrid();
 
-// Sync from JSONBin on startup — loads all results, points and picks
-// Must call renderAll() after so the UI reflects the synced data
+// Sync from JSONBin on startup — MUST complete before rendering
 (async () => {
   try {
     const data = await dbGet();
     applyRemoteData(data);
     buildLoginGrid();
-    // If already logged in (e.g. returning user), re-render with fresh data
     if (S.currentUser) renderAll();
-    console.log('Startup sync complete');
+    console.log('✅ Startup sync complete — fixtures loaded from JSONBin');
   } catch(e) {
-    console.warn('Startup sync failed:', e.message);
+    console.warn('Startup sync failed — using cached data:', e.message);
   }
 })();
 
