@@ -785,7 +785,7 @@ let S = {
 
 function loadState() {
   try {
-    const s = localStorage.getItem('sfgs_trial_26');
+    const s = localStorage.getItem('sfgs_v4');
     if (s) {
       const p = JSON.parse(s);
       // Only load live picks and any admin changes — keep season data fixed
@@ -818,7 +818,7 @@ function loadState() {
 
 function saveState() {
   try {
-    localStorage.setItem('sfgs_trial_26', JSON.stringify({
+    localStorage.setItem('sfgs_v4', JSON.stringify({
       picks: S.picks,
       pins: S.pins,
       baseOrder: S.baseOrder,
@@ -1950,14 +1950,14 @@ function updatePin() {
 
 function hardReset() {
   if (confirm('This will clear all saved picks and reset the app. Continue?')) {
-    localStorage.removeItem('sfgs_trial_26');
+    localStorage.removeItem('sfgs_v4');
     location.reload();
   }
 }
 
 function hardReset() {
   if (confirm('This will clear saved data and reload. Continue?')) {
-    localStorage.removeItem('sfgs_trial_26');
+    localStorage.removeItem('sfgs_v4');
     location.reload();
   }
 }
@@ -2765,13 +2765,19 @@ function toast(msg, type='ok') {
 // ══════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════
+// Use versioned localStorage key — bump version to force fresh start
+const LS_VERSION = 'sfgs_v4';
+const oldData = localStorage.getItem('sfgs_v4') || localStorage.getItem('sfgs_v3');
+if (oldData) {
+  // Migrate picks from old key if present, then clear old keys
+  try {
+    const parsed = JSON.parse(oldData);
+    if (parsed.picks) localStorage.setItem(LS_VERSION, JSON.stringify({ picks: parsed.picks }));
+  } catch(e) {}
+  localStorage.removeItem('sfgs_v4');
+  localStorage.removeItem('sfgs_v3');
+}
 loadState();
-// Clear any cached fixture/result data from localStorage — JSONBin is source of truth
-// This ensures fixture times, results etc always come from JSONBin not stale cache
-S.fixtures.forEach(f => {
-  if (f.result !== 'TBD') return; // keep completed hardcoded results
-  // Reset to hardcoded defaults — JSONBin will override on sync
-});
 buildLoginGrid();
 
 // Sync from JSONBin on startup — MUST complete before rendering
