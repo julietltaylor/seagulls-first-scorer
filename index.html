@@ -376,7 +376,7 @@ hr{border:none;border-top:1px solid var(--brd);margin:1rem 0;}
   <div class="stats-row">
     <div class="stat-card"><div class="stat-num" id="s-pts">0</div><div class="stat-lbl">Your Points</div></div>
     <div class="stat-card"><div class="stat-num" id="s-picks">0</div><div class="stat-lbl">Correct Picks</div></div>
-    <div class="stat-card"><div class="stat-num" id="s-pot">3</div><div class="stat-lbl">Current Pot</div></div>
+    <div class="stat-card"><div class="stat-num" id="s-pot">—</div><div class="stat-lbl">Current Pot</div></div>
     <div class="stat-card"><div class="stat-num" id="s-rank">—</div><div class="stat-lbl">Your Rank</div></div>
   </div>
   <div class="sec-hdr"><div class="sec-title">Top <em>3</em></div></div>
@@ -417,7 +417,7 @@ hr{border:none;border-top:1px solid var(--brd);margin:1rem 0;}
   <div class="sec-hdr"><div><div class="sec-title"><em>Leaderboard</em></div><div class="sec-sub">2025/26 Season</div></div></div>
   <div class="card" style="margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
     <span style="font-size:.83rem;color:var(--muted)">🏆 Rolling pot going into Chelsea:</span>
-    <span class="pot-badge">3 pts</span>
+    <span class="pot-badge" id="lb-pot-badge">— pts</span>
   </div>
   <div class="lb-list" id="main-lb"></div>
 </div>
@@ -747,8 +747,7 @@ const SQUAD = [
 const SEASON_POINTS = {};
 const SEASON_CORRECT = {};
 
-// Current pot going into Chelsea = 3 (Tottenham rolled over + Burnley rolled over)
-const CURRENT_POT = 3;
+// Pot calculated dynamically from results via recalcPoints()
 
 // Completed games count for rotation (38 completed games)
 const COMPLETED_GAMES = 38;
@@ -761,16 +760,14 @@ let S = {
   isAdmin: false,
   players: ['Juliet','Mick','Claire','Andy','Cathy','Masher','Chris','Darren','Paul'],
   // Base pick order — rotates each game
-  // For game 39 (0-indexed = 38): offset = 38 % 9 = 2
-  // So order starts from index 2: Claire, Andy, Cathy, Masher, Chris, Darren, Paul, Juliet, Mick
-  // Pick order for Chelsea: Andy 1st, Cathy 2nd... Chris last (rotated from Tottenham where Chris was 1st)
+  // Pick order — loaded from JSONBin, rotates after each PL game
   baseOrder: ['Cathy','Mick','Paul','Masher','Juliet','Darren','Claire','Chris','Andy'],
   squad: [...SQUAD],
   fixtures: SEASON_RESULTS,
   picks: {},       // live picks for upcoming games {fixtureId: {playerName: pick}}
   points: {},       // loaded from JSONBin on startup
   correctPicks: {}, // loaded from JSONBin on startup
-  currentPot: CURRENT_POT,
+  currentPot: 1, // recalculated from results on sync
   fixCounter: 44,
   // Player PINs — admin can update these. Default 1234 for all.
   pins: {
@@ -852,6 +849,16 @@ function rotateOrderAfterGame(comp) {
   rotated.push(rotated.shift());
   S.baseOrder = rotated;
   saveState();
+  // Persist to JSONBin so all devices see the new order
+  dbWrite_baseOrder(S.baseOrder);
+}
+
+async function dbWrite_baseOrder(order) {
+  try {
+    const current = await dbGet();
+    current.baseOrder = order;
+    await dbWrite(current);
+  } catch(e) { console.warn('Failed to save pick order to JSONBin:', e.message); }
 }
 
 function getNextFix() {
@@ -1429,6 +1436,8 @@ function renderPicksPage() {
 }
 
 function renderLeaderboard() {
+  const potBadge = document.getElementById('lb-pot-badge');
+  if (potBadge) potBadge.textContent = '🏆 ' + S.currentPot + ' pt' + (S.currentPot !== 1 ? 's' : '');
   document.getElementById('main-lb').innerHTML = renderLbRows(lbSorted());
 }
 
@@ -2618,6 +2627,8 @@ function applyRemoteData(data) {
   if (data.baseOrder && data.baseOrder.length > 0) {
     S.baseOrder = data.baseOrder;
   }
+  // Recalculate pot from all results (most accurate)
+  recalcPoints();
 
   // Fixtures from JSONBin fully override hardcoded ones
   // JSONBin is the single source of truth for fixture data
