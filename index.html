@@ -747,7 +747,7 @@ const SQUAD = [
 const SEASON_POINTS = {};
 const SEASON_CORRECT = {};
 
-// Pot calculated dynamically from results via recalcPoints()
+// Pot calculated dynamically from results in applyRemoteData
 
 // Completed games count for rotation (38 completed games)
 const COMPLETED_GAMES = 38;
@@ -2627,8 +2627,14 @@ function applyRemoteData(data) {
   if (data.baseOrder && data.baseOrder.length > 0) {
     S.baseOrder = data.baseOrder;
   }
-  // Recalculate pot from all results (most accurate)
-  recalcPoints();
+  // Recalculate pot from all results
+  let pot = 1;
+  const sortedFix = [...S.fixtures].sort((a,b) => a.datetime.localeCompare(b.datetime));
+  for (const f of sortedFix) {
+    if (f.result === 'TBD') { pot++; continue; }
+    if (f.winner) { pot = 1; } else { pot++; }
+  }
+  S.currentPot = pot - 1;
 
   // Fixtures from JSONBin fully override hardcoded ones
   // JSONBin is the single source of truth for fixture data
