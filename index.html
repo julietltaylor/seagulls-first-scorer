@@ -1411,7 +1411,18 @@ function renderHome() {
 
 function renderPicksPage() {
   const fix = getNextFix();
-  if (fix) renderPickSlots(fix, 'p-pick-slots', true);
+  if (fix) {
+    const pTeams = document.getElementById('p-teams');
+    const pMeta = document.getElementById('p-meta');
+    const pPot = document.getElementById('p-pot');
+    if (pTeams) pTeams.textContent = 'Brighton ' + (fix.ha === 'H' ? 'vs' : '@') + ' ' + fix.opp;
+    if (pMeta) pMeta.textContent = fmtDate(fix.datetime) + ' · KO ' + fmtTime(fix.datetime) + ' · ' + fix.comp;
+    if (pPot) pPot.textContent = '🏆 Pot: ' + S.currentPot + ' pt' + (S.currentPot !== 1 ? 's' : '');
+    renderPickSlots(fix, 'p-pick-slots', true);
+  } else {
+    const pTeams = document.getElementById('p-teams');
+    if (pTeams) pTeams.textContent = 'No upcoming fixtures';
+  }
 
   // My history — show what we know from the season data
   const done = [...S.fixtures].filter(f => f.result !== 'TBD').sort((a,b) => b.datetime.localeCompare(a.datetime));
