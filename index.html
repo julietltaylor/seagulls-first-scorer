@@ -764,7 +764,7 @@ let S = {
   // For game 39 (0-indexed = 38): offset = 38 % 9 = 2
   // So order starts from index 2: Claire, Andy, Cathy, Masher, Chris, Darren, Paul, Juliet, Mick
   // Pick order for Chelsea: Andy 1st, Cathy 2nd... Chris last (rotated from Tottenham where Chris was 1st)
-  baseOrder: ['Andy','Cathy','Mick','Paul','Masher','Juliet','Darren','Claire','Chris'],
+  baseOrder: ['Cathy','Mick','Paul','Masher','Juliet','Darren','Claire','Chris','Andy'],
   squad: [...SQUAD],
   fixtures: SEASON_RESULTS,
   picks: {},       // live picks for upcoming games {fixtureId: {playerName: pick}}
@@ -812,7 +812,7 @@ function loadState() {
     S.players = ['Juliet','Mick','Claire','Andy','Cathy','Masher','Chris','Darren','Paul'];
   }
   if (!S.baseOrder || S.baseOrder.length === 0) {
-    S.baseOrder = ['Andy','Cathy','Mick','Paul','Masher','Juliet','Darren','Claire','Chris'];
+    S.baseOrder = ['Cathy','Mick','Paul','Masher','Juliet','Darren','Claire','Chris','Andy'];
   }
 }
 
@@ -2613,6 +2613,10 @@ function applyRemoteData(data) {
   // Merge PINs
   if (data.pins) {
     Object.entries(data.pins).forEach(([name, pin]) => { S.pins[name] = pin; });
+  }
+  // Load pick order from JSONBin
+  if (data.baseOrder && data.baseOrder.length > 0) {
+    S.baseOrder = data.baseOrder;
   }
 
   // Fixtures from JSONBin fully override hardcoded ones
