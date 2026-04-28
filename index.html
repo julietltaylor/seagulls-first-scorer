@@ -2786,8 +2786,19 @@ buildLoginGrid();
     const data = await dbGet();
     applyRemoteData(data);
     buildLoginGrid();
+    // Update fixture hero directly so it shows correct game even before login
+    const nextFix = getNextFix();
+    if (nextFix) {
+      const teamsEl = document.getElementById('h-teams');
+      const metaEl = document.getElementById('h-meta');
+      const potEl = document.getElementById('h-pot');
+      if (teamsEl) teamsEl.textContent = 'Brighton ' + (nextFix.ha === 'H' ? 'vs' : '@') + ' ' + nextFix.opp;
+      if (metaEl) metaEl.textContent = fmtDate(nextFix.datetime) + ' · KO ' + fmtTime(nextFix.datetime) + ' · ' + nextFix.comp;
+      if (potEl) potEl.textContent = '🏆 Pot: ' + S.currentPot + ' pts';
+    }
+    // Re-render everything if logged in
     if (S.currentUser) renderAll();
-    console.log('✅ Startup sync complete — fixtures loaded from JSONBin');
+    console.log('✅ Startup sync complete — next fixture: ' + (getNextFix()?.opp || 'none'));
   } catch(e) {
     console.warn('Startup sync failed — using cached data:', e.message);
   }
