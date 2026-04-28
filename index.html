@@ -314,7 +314,7 @@ hr{border:none;border-top:1px solid var(--brd);margin:1rem 0;}
   <div class="login-card">
     <div class="login-icon">🔵</div>
     <h1>Seagulls <em>First</em> Scorer</h1>
-    <p class="login-sub">2025/26 Trial · Next game: Brighton vs Chelsea<br>Pick Brighton's first goalscorer · Pot rolls over!</p>
+    <p class="login-sub">2025/26 Season · Pick Brighton's first goalscorer · Pot rolls over!</p>
     <div class="player-grid" id="player-grid"></div>
     <div class="admin-section">
       <p>🔐 Admin access</p>
@@ -354,12 +354,12 @@ hr{border:none;border-top:1px solid var(--brd);margin:1rem 0;}
 <!-- HOME -->
 <div class="page active" id="page-home">
   <div class="sec-hdr"><div><div class="sec-title">Welcome, <em id="home-name">Player</em></div><div class="sec-sub" id="home-season-sub">2025/26 Season Trial</div></div></div>
-  <div class="season-badge">📅 2025/26 Season · Trial game: Brighton vs Chelsea · 21 Apr 2026</div>
+  <div class="season-badge" id="season-badge">📅 2025/26 Season</div>
   <div class="fixture-hero" id="home-hero">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.6rem"><div class="fix-label" style="margin:0">⚡ Next Fixture</div><div id="lineup-badge" style="font-size:.72rem;padding:.18rem .6rem;border-radius:6px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:var(--amber)">⏳ Lineup not yet confirmed</div></div>
-    <div class="fix-teams" id="h-teams">Brighton vs Chelsea</div>
-    <div class="fix-meta" id="h-meta">Tue 21 Apr 2026 · KO 20:00 · Premier League · Home</div>
-    <div class="pot-badge" id="h-pot">🏆 Pot: 3 pts</div>
+    <div class="fix-teams" id="h-teams">Loading…</div>
+    <div class="fix-meta" id="h-meta">Syncing with server…</div>
+    <div class="pot-badge" id="h-pot">🏆 Pot: — pts</div>
     <div class="countdown-wrap">
       <div class="countdown-label" id="h-cd-label">Pick window opens in</div>
       <div class="countdown-display waiting" id="h-cd">—:——</div>
@@ -388,9 +388,9 @@ hr{border:none;border-top:1px solid var(--brd);margin:1rem 0;}
   <div class="sec-hdr"><div><div class="sec-title">My <em>Pick</em></div><div class="sec-sub">One pick per game · unique players only</div></div></div>
   <div class="card glow" style="margin-bottom:1.25rem">
     <div class="fix-label">⚡ Next Fixture</div>
-    <div class="fix-teams">Brighton vs Chelsea</div>
-    <div class="fix-meta">Tue 21 Apr 2026 · KO 20:00 · Premier League · Home</div>
-    <div class="pot-badge">🏆 Pot: 3 pts</div>
+    <div class="fix-teams" id="p-teams">Loading…</div>
+    <div class="fix-meta" id="p-meta">Syncing…</div>
+    <div class="pot-badge" id="p-pot">🏆 Pot: — pts</div>
     <hr>
     <div class="countdown-wrap">
       <div class="countdown-label" id="p-cd-label">—</div>
@@ -1359,8 +1359,23 @@ function renderLbRows(players) {
 function renderHome() {
   const fix = getNextFix();
   const completedCount = getCompletedCount();
+
+  // Always update the fixture hero with the current next fixture
+  const teamsEl = document.getElementById('h-teams');
+  const metaEl = document.getElementById('h-meta');
+  const potEl = document.getElementById('h-pot');
+  const badgeEl = document.getElementById('season-badge');
+
   if (fix) {
+    if (teamsEl) teamsEl.textContent = 'Brighton ' + (fix.ha === 'H' ? 'vs' : '@') + ' ' + fix.opp;
+    if (metaEl) metaEl.textContent = fmtDate(fix.datetime) + ' · KO ' + fmtTime(fix.datetime) + ' · ' + fix.comp + ' · ' + (fix.ha === 'H' ? 'Home' : 'Away');
+    if (potEl) potEl.textContent = '🏆 Pot: ' + S.currentPot + ' pt' + (S.currentPot !== 1 ? 's' : '');
+    if (badgeEl) badgeEl.textContent = '📅 2025/26 Season · Next: ' + fix.opp + ' · ' + fmtShort(fix.datetime);
     renderPickSlots(fix, 'h-pick-slots', true);
+  } else {
+    if (teamsEl) teamsEl.textContent = 'Season complete!';
+    if (metaEl) metaEl.textContent = 'All fixtures played';
+    if (potEl) potEl.textContent = '🏆 Final pot: ' + S.currentPot;
   }
   const u = S.currentUser;
   // Update lineup badge
