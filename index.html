@@ -416,7 +416,7 @@ hr{border:none;border-top:1px solid var(--brd);margin:1rem 0;}
 <div class="page" id="page-leaderboard">
   <div class="sec-hdr"><div><div class="sec-title"><em>Leaderboard</em></div><div class="sec-sub">2025/26 Season</div></div></div>
   <div class="card" style="margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
-    <span style="font-size:.83rem;color:var(--muted)">🏆 Rolling pot going into Chelsea:</span>
+    <span style="font-size:.83rem;color:var(--muted)" id="lb-pot-label">🏆 Rolling pot:</span>
     <span class="pot-badge" id="lb-pot-badge">— pts</span>
   </div>
   <div class="lb-list" id="main-lb"></div>
@@ -456,14 +456,52 @@ hr{border:none;border-top:1px solid var(--brd);margin:1rem 0;}
       <button class="btn full" onclick="confirmResult()">✅ Confirm & Award Points</button>
     </div>
     <div class="card">
-      <div class="admin-sec-title">📅 Add Fixture</div>
-      <div class="form-group"><label>Date & Kick-off Time</label><input type="datetime-local" id="a-date"></div>
-      <div class="form-group"><label>Competition</label><select id="a-comp"><option value="Premier League">Premier League</option><option value="FA Cup">FA Cup</option><option value="Carabao Cup">Carabao Cup</option></select></div>
-      <div class="form-group"><label>Opposition</label><input type="text" id="a-opp" placeholder="e.g. Arsenal"></div>
-      <div class="form-group"><label>Home / Away</label><select id="a-ha"><option value="H">Home</option><option value="A">Away</option></select></div>
-      <div class="form-group"><label>API Fixture ID <span style="color:var(--muted);font-weight:400">(from api-football.com — needed for lineup fetch)</span></label>
-        <input type="number" id="a-api-id" placeholder="e.g. 1035055"></div>
-      <button class="btn full" onclick="addFixture()">➕ Add Fixture</button>
+      <div class="tab-bar" style="margin-bottom:.85rem">
+        <button class="tab-btn active" onclick="showFixtureTab('add',this)">➕ Add Fixture</button>
+        <button class="tab-btn" onclick="showFixtureTab('edit',this)">✏️ Edit Fixture</button>
+        <button class="tab-btn" onclick="showFixtureTab('season',this)">🔄 New Season</button>
+      </div>
+
+      <!-- ADD FIXTURE -->
+      <div id="fix-tab-add">
+        <div class="form-group"><label>Date & Kick-off Time</label><input type="datetime-local" id="a-date"></div>
+        <div class="form-group"><label>Competition</label><select id="a-comp"><option value="Premier League">Premier League</option><option value="FA Cup">FA Cup</option><option value="Carabao Cup">Carabao Cup</option></select></div>
+        <div class="form-group"><label>Opposition</label><input type="text" id="a-opp" placeholder="e.g. Arsenal"></div>
+        <div class="form-group"><label>Home / Away</label><select id="a-ha"><option value="H">Home</option><option value="A">Away</option></select></div>
+        <button class="btn full" onclick="addFixture()">➕ Add Fixture</button>
+      </div>
+
+      <!-- EDIT FIXTURE -->
+      <div id="fix-tab-edit" style="display:none">
+        <div class="form-group"><label>Select Fixture to Edit</label>
+          <select id="edit-fix-sel" onchange="loadFixtureForEdit()"><option value="">Select fixture…</option></select>
+        </div>
+        <div class="form-group"><label>Date & Kick-off Time</label><input type="datetime-local" id="edit-date"></div>
+        <div class="form-group"><label>Competition</label><select id="edit-comp"><option value="Premier League">Premier League</option><option value="FA Cup">FA Cup</option><option value="Carabao Cup">Carabao Cup</option></select></div>
+        <div class="form-group"><label>Opposition</label><input type="text" id="edit-opp" placeholder="e.g. Arsenal"></div>
+        <div class="form-group"><label>Home / Away</label><select id="edit-ha"><option value="H">Home</option><option value="A">Away</option></select></div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="btn full" onclick="saveFixtureEdit()">💾 Save Changes</button>
+          <button class="btn danger sm" onclick="deleteFixture()">🗑 Delete Fixture</button>
+        </div>
+      </div>
+
+      <!-- NEW SEASON -->
+      <div id="fix-tab-season" style="display:none">
+        <p style="font-size:.78rem;color:var(--muted);margin-bottom:.85rem">
+          Use this at the start of a new season. This will archive completed fixtures and reset points — picks history is preserved in JSONBin.
+        </p>
+        <div class="form-group"><label>New Season Name (e.g. 2026/27)</label>
+          <input type="text" id="new-season-name" placeholder="2026/27">
+        </div>
+        <div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:9px;padding:.85rem;margin-bottom:.85rem;font-size:.8rem;color:var(--muted)">
+          ⚠️ This will clear all completed fixtures, reset all points to 0, and reset the pick order. Make sure you've exported the spreadsheet first!
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="btn danger" onclick="startNewSeason()">🔄 Start New Season</button>
+          <button class="btn ghost sm" onclick="exportSeasonData()">📥 Export Season Data First</button>
+        </div>
+      </div>
     </div>
   </div>
   <!-- TEST MODE TOGGLE -->
@@ -1447,6 +1485,9 @@ function renderPicksPage() {
 }
 
 function renderLeaderboard() {
+  const fix = getNextFix();
+  const potLabel = document.getElementById('lb-pot-label');
+  if (potLabel) potLabel.textContent = '🏆 Rolling pot going into ' + (fix ? fix.opp : 'next game') + ':';
   const potBadge = document.getElementById('lb-pot-badge');
   if (potBadge) potBadge.textContent = '🏆 ' + S.currentPot + ' pt' + (S.currentPot !== 1 ? 's' : '');
   document.getElementById('main-lb').innerHTML = renderLbRows(lbSorted());
@@ -1580,6 +1621,9 @@ function renderAdmin() {
 
   loadAdminPicks();
   renderSquadSelector();
+
+  // Populate edit fixture select
+  populateEditFixtureSelect();
 
   // Populate admin entry fixture select — upcoming TBD fixtures
   const entryFixSel = document.getElementById('admin-entry-fix');
@@ -1720,9 +1764,7 @@ function addFixture() {
   const opp = document.getElementById('a-opp').value.trim();
   const ha = document.getElementById('a-ha').value;
   if (!dt || !opp) { toast('Fill in all fields', 'err'); return; }
-  const apiId = parseInt(document.getElementById('a-api-id')?.value) || null;
-  S.fixtures.push({id:S.fixCounter++,datetime:dt,comp,opp,ha,result:'TBD',scorer:null,goalTime:null,winner:null,potWon:0,apiFixtureId:apiId});
-  if(document.getElementById('a-api-id')) document.getElementById('a-api-id').value='';
+  S.fixtures.push({id:S.fixCounter++,datetime:dt,comp,opp,ha,result:'TBD',scorer:null,goalTime:null,winner:null,potWon:0});
   saveState(); toast(`✅ ${opp} added`, 'ok'); renderAdmin();
   document.getElementById('a-date').value = '';
   document.getElementById('a-opp').value = '';
@@ -2795,6 +2837,163 @@ async function adminEnterPick() {
   renderAll();
   loadAdminPicks();
   updateAdminPickDropdown();
+}
+
+
+// ── FIXTURE MANAGEMENT ──────────────────────────────────────
+
+function showFixtureTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ['add','edit','season'].forEach(t => {
+    const el = document.getElementById('fix-tab-' + t);
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+  });
+  if (tab === 'edit') populateEditFixtureSelect();
+}
+
+function populateEditFixtureSelect() {
+  const sel = document.getElementById('edit-fix-sel');
+  if (!sel) return;
+  const sorted = [...S.fixtures].sort((a,b) => a.datetime.localeCompare(b.datetime));
+  sel.innerHTML = '<option value="">Select fixture…</option>' +
+    sorted.map(f => {
+      const label = fmtShort(f.datetime) + ' ' + fmtTime(f.datetime) + ' — ' + f.opp + ' (' + f.ha + ')' + (f.result !== 'TBD' ? ' [' + f.result + ']' : '');
+      return '<option value="' + f.id + '">' + label + '</option>';
+    }).join('');
+}
+
+function loadFixtureForEdit() {
+  const id = parseInt(document.getElementById('edit-fix-sel').value);
+  if (!id) return;
+  const fix = S.fixtures.find(f => f.id === id);
+  if (!fix) return;
+  document.getElementById('edit-date').value = fix.datetime;
+  document.getElementById('edit-comp').value = fix.comp;
+  document.getElementById('edit-opp').value = fix.opp;
+  document.getElementById('edit-ha').value = fix.ha;
+}
+
+async function saveFixtureEdit() {
+  const id = parseInt(document.getElementById('edit-fix-sel').value);
+  const dt = document.getElementById('edit-date').value;
+  const comp = document.getElementById('edit-comp').value;
+  const opp = document.getElementById('edit-opp').value.trim();
+  const ha = document.getElementById('edit-ha').value;
+  if (!id) { toast('Please select a fixture', 'err'); return; }
+  if (!dt || !opp) { toast('Fill in all fields', 'err'); return; }
+
+  const fix = S.fixtures.find(f => f.id === id);
+  if (!fix) return;
+  fix.datetime = dt;
+  fix.comp = comp;
+  fix.opp = opp;
+  fix.ha = ha;
+  saveState();
+
+  // Sync updated fixture to JSONBin
+  try {
+    const data = await dbGet();
+    if (!data.fixtures) data.fixtures = [];
+    const idx = data.fixtures.findIndex(f => String(f.id) === String(id));
+    if (idx >= 0) data.fixtures[idx] = fix;
+    else data.fixtures.push(fix);
+    await dbWrite(data);
+    toast('✅ Fixture updated — ' + opp + ' now ' + fmtShort(dt) + ' ' + fmtTime(dt), 'ok');
+  } catch(e) {
+    toast('✅ Saved locally (sync failed: ' + e.message + ')', 'ok');
+  }
+
+  renderAll(); renderAdmin(); populateEditFixtureSelect();
+}
+
+async function deleteFixture() {
+  const id = parseInt(document.getElementById('edit-fix-sel').value);
+  if (!id) { toast('Please select a fixture', 'err'); return; }
+  const fix = S.fixtures.find(f => f.id === id);
+  if (!fix) return;
+  if (!confirm('Delete ' + fix.opp + ' (' + fmtShort(fix.datetime) + ')? This cannot be undone.')) return;
+
+  S.fixtures = S.fixtures.filter(f => f.id !== id);
+  delete S.picks[id];
+  saveState();
+
+  try {
+    const data = await dbGet();
+    if (data.fixtures) data.fixtures = data.fixtures.filter(f => String(f.id) !== String(id));
+    if (data.picks) delete data.picks[id];
+    await dbWrite(data);
+    toast('✅ Fixture deleted', 'ok');
+  } catch(e) {
+    toast('Deleted locally (sync failed)', 'ok');
+  }
+
+  renderAll(); renderAdmin();
+}
+
+async function startNewSeason() {
+  const name = document.getElementById('new-season-name').value.trim();
+  if (!name) { toast('Please enter a season name e.g. 2026/27', 'err'); return; }
+  if (!confirm('Start new season ' + name + '? This will clear all results and reset points. Make sure you have exported the data first!')) return;
+
+  // Archive to JSONBin under a season key, then reset
+  try {
+    const data = await dbGet();
+    // Archive current season
+    if (!data.archive) data.archive = {};
+    data.archive[name.replace('/', '-')] = {
+      results: data.results,
+      points: data.points,
+      correctPicks: data.correctPicks,
+      picks: data.picks,
+    };
+    // Reset for new season
+    data.results = {};
+    data.points = {};
+    data.correctPicks = {};
+    data.picks = {};
+    data.fixtures = [];
+    data.baseOrder = [...S.players]; // reset pick order
+    await dbWrite(data);
+    toast('✅ New season started! Add fixtures to begin.', 'ok');
+  } catch(e) {
+    toast('❌ Failed: ' + e.message, 'err');
+    return;
+  }
+
+  // Reset local state
+  S.fixtures = S.fixtures.filter(f => f.result === 'TBD'); // keep upcoming
+  S.points = {};
+  S.correctPicks = {};
+  S.picks = {};
+  S.currentPot = 1;
+  S.baseOrder = [...S.players];
+  saveState();
+  renderAll(); renderAdmin();
+}
+
+function exportSeasonData() {
+  // Create a JSON download of current season data
+  const exportData = {
+    season: '2025/26',
+    exportedAt: new Date().toISOString(),
+    results: {},
+    points: S.points,
+    correctPicks: S.correctPicks,
+  };
+  S.fixtures.filter(f => f.result !== 'TBD').forEach(f => {
+    exportData.results[f.id] = {
+      date: f.datetime, opp: f.opp, ha: f.ha, comp: f.comp,
+      result: f.result, scorer: f.scorer, goalTime: f.goalTime,
+      winner: f.winner, potWon: f.potWon
+    };
+  });
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'seagulls-season-2025-26.json';
+  a.click();
+  toast('✅ Season data exported!', 'ok');
 }
 
 
