@@ -562,52 +562,81 @@ hr{border:none;border-top:1px solid var(--brd);margin:1rem 0;}
     <div class="row" style="margin-bottom:.85rem;gap:.5rem"><input type="text" id="a-new-squad" placeholder="Player name"><button class="btn sm" onclick="addSquadPlayer()">➕ Add</button></div>
     <div class="players-chips" id="squad-chips"></div>
   </div>
-  <!-- LINEUP SCREENSHOT -->
+  <!-- LINEUP ENTRY -->
   <div class="card" style="margin-bottom:1rem">
-    <div class="admin-sec-title">📸 Upload Team Screenshot</div>
-    <p style="font-size:.78rem;color:var(--muted);margin-bottom:.85rem">
-      Take a screenshot of the Brighton lineup from BBC Sport, Sky Sports, the Brighton app or anywhere else.
-      Upload it here and Claude will read the names automatically.
-    </p>
+    <div class="admin-sec-title">📋 Match Day Squad</div>
 
-    <!-- Upload area -->
-    <div id="upload-area"
-      onclick="document.getElementById('lineup-img-input').click()"
-      style="border:2px dashed var(--brd);border-radius:12px;padding:2rem;text-align:center;
-             cursor:pointer;transition:all .2s;margin-bottom:.85rem"
-      ondragover="event.preventDefault();this.style.borderColor='var(--blue)'"
-      ondragleave="this.style.borderColor='var(--brd)'"
-      ondrop="handleImageDrop(event)">
-      <div style="font-size:2rem;margin-bottom:.5rem">📸</div>
-      <div style="font-size:.88rem;color:var(--txt);font-weight:500">Tap to upload screenshot</div>
-      <div style="font-size:.75rem;color:var(--muted);margin-top:.25rem">or drag and drop · JPG, PNG, HEIC supported</div>
-      <input type="file" id="lineup-img-input" accept="image/*" style="display:none" onchange="handleImageSelect(event)">
+    <div class="tab-bar" style="margin-bottom:.85rem">
+      <button class="tab-btn active" onclick="showLineupTab('json', this)">📋 Paste JSON</button>
+      <button class="tab-btn" onclick="showLineupTab('manual', this)">✏️ Manual</button>
+      <button class="tab-btn" onclick="showLineupTab('image', this)">📸 Image OCR</button>
     </div>
 
-    <!-- Image preview -->
-    <div id="img-preview" style="display:none;margin-bottom:.85rem">
-      <img id="preview-img" style="max-width:100%;border-radius:8px;border:1px solid var(--brd);max-height:300px;object-fit:contain">
-      <div style="display:flex;gap:.5rem;margin-top:.5rem">
-        <button class="btn gold" onclick="extractLineupFromImage()">🔍 Read Team from Image</button>
-        <button class="btn sm ghost" onclick="clearImage()">✕ Clear</button>
+    <!-- JSON PASTE TAB -->
+    <div id="lineup-tab-json">
+      <p style="font-size:.78rem;color:var(--muted);margin-bottom:.75rem">
+        Share the lineup image in the Claude chat, Claude will read it and give you JSON to paste here.
+      </p>
+      <div class="form-group">
+        <label>Starters (JSON array)</label>
+        <textarea id="json-starters" rows="3"
+          style="width:100%;background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:.65rem;color:var(--txt);font-family:monospace;font-size:.78rem;resize:vertical"
+          placeholder='["Verbruggen","Dunk","Van Hecke","Minteh","Hinshelwood","Welbeck","Milner","Kadioglu","Gomez","Wieffer","Gross"]'></textarea>
       </div>
+      <div class="form-group">
+        <label>Substitutes (JSON array)</label>
+        <textarea id="json-subs" rows="3"
+          style="width:100%;background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:.65rem;color:var(--txt);font-family:monospace;font-size:.78rem;resize:vertical"
+          placeholder='["Steele","March","Rutter","Boscagli","Ayari","De Cuyper","O\'Riley","Veltman","Howell"]'></textarea>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+        <button class="btn gold" onclick="confirmJsonLineup()">✅ Confirm Squad</button>
+        <div id="json-lineup-status" style="font-size:.82rem;color:var(--muted)"></div>
+      </div>
+      <div id="json-lineup-display" style="margin-top:.75rem"></div>
     </div>
 
-    <!-- Status and result -->
-    <div id="lineup-status" style="font-size:.82rem;color:var(--muted);margin-bottom:.5rem"></div>
-    <div id="lineup-display"></div>
-
-    <!-- Manual override -->
-    <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--brd)">
-      <div style="font-size:.75rem;color:var(--muted);margin-bottom:.5rem;font-weight:500;text-transform:uppercase;letter-spacing:.05em">✏️ Manual override — edit names if needed</div>
-      <textarea id="lineup-paste" rows="3"
+    <!-- MANUAL TAB -->
+    <div id="lineup-tab-manual" style="display:none">
+      <p style="font-size:.78rem;color:var(--muted);margin-bottom:.75rem">
+        Enter names one per line — first 11 = starters, rest = subs.
+      </p>
+      <textarea id="lineup-paste" rows="8"
         style="width:100%;background:var(--bg2);border:1px solid var(--brd);border-radius:8px;
                padding:.65rem;color:var(--txt);font-family:inherit;font-size:.83rem;resize:vertical"
-        placeholder="Names will appear here after scan — edit if needed, one per line&#10;First 11 = starters, rest = subs"></textarea>
+        placeholder="Verbruggen&#10;Dunk&#10;Van Hecke&#10;...&#10;SUBS:&#10;Steele&#10;March"></textarea>
       <div style="display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap">
         <button class="btn sm" onclick="confirmManualLineup()">✅ Confirm Squad</button>
         <button class="btn sm ghost" onclick="clearSquadSelection()">✕ Clear</button>
       </div>
+    </div>
+
+    <!-- IMAGE OCR TAB -->
+    <div id="lineup-tab-image" style="display:none">
+      <p style="font-size:.78rem;color:var(--muted);margin-bottom:.75rem">
+        Upload a screenshot — OCR will attempt to read the names. Results may need editing.
+      </p>
+      <div id="upload-area"
+        onclick="document.getElementById('lineup-img-input').click()"
+        style="border:2px dashed var(--brd);border-radius:12px;padding:2rem;text-align:center;
+               cursor:pointer;transition:all .2s;margin-bottom:.85rem"
+        ondragover="event.preventDefault();this.style.borderColor='var(--blue)'"
+        ondragleave="this.style.borderColor='var(--brd)'"
+        ondrop="handleImageDrop(event)">
+        <div style="font-size:2rem;margin-bottom:.5rem">📸</div>
+        <div style="font-size:.88rem;color:var(--txt);font-weight:500">Tap to upload screenshot</div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:.25rem">JPG, PNG, HEIC supported</div>
+        <input type="file" id="lineup-img-input" accept="image/*" style="display:none" onchange="handleImageSelect(event)">
+      </div>
+      <div id="img-preview" style="display:none;margin-bottom:.85rem">
+        <img id="preview-img" style="max-width:100%;border-radius:8px;border:1px solid var(--brd);max-height:300px;object-fit:contain">
+        <div style="display:flex;gap:.5rem;margin-top:.5rem">
+          <button class="btn gold" onclick="extractLineupFromImage()">🔍 Read Team from Image</button>
+          <button class="btn sm ghost" onclick="clearImage()">✕ Clear</button>
+        </div>
+      </div>
+      <div id="lineup-status" style="font-size:.82rem;color:var(--muted);margin-bottom:.5rem"></div>
+      <div id="lineup-display"></div>
     </div>
   </div>
 
@@ -2994,6 +3023,80 @@ function exportSeasonData() {
   a.download = 'seagulls-season-2025-26.json';
   a.click();
   toast('✅ Season data exported!', 'ok');
+}
+
+
+function showLineupTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    if (b.getAttribute('onclick') && b.getAttribute('onclick').includes('showLineupTab'))
+      b.classList.remove('active');
+  });
+  btn.classList.add('active');
+  ['json','manual','image'].forEach(t => {
+    const el = document.getElementById('lineup-tab-' + t);
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+  });
+}
+
+async function confirmJsonLineup() {
+  const startersEl = document.getElementById('json-starters');
+  const subsEl = document.getElementById('json-subs');
+  const statusEl = document.getElementById('json-lineup-status');
+  const displayEl = document.getElementById('json-lineup-display');
+
+  let starters, subs;
+  try {
+    const startersRaw = startersEl.value.trim();
+    const subsRaw = subsEl.value.trim();
+    if (!startersRaw) throw new Error('Please enter the starters');
+    starters = JSON.parse(startersRaw);
+    subs = subsRaw ? JSON.parse(subsRaw) : [];
+    if (!Array.isArray(starters)) throw new Error('Starters must be a JSON array');
+    if (!Array.isArray(subs)) throw new Error('Subs must be a JSON array');
+  } catch(e) {
+    statusEl.textContent = '❌ ' + e.message;
+    statusEl.style.color = 'var(--red)';
+    toast('❌ Invalid JSON — check format', 'err');
+    return;
+  }
+
+  // Update state
+  S.starters = starters;
+  S.subs = subs;
+  S.squad = [...starters, ...subs];
+  S.lineupConfirmed = true;
+  S.lineupFetchedAt = new Date().toISOString();
+  saveState();
+
+  // Sync to JSONBin
+  statusEl.textContent = 'Saving to JSONBin…';
+  statusEl.style.color = 'var(--muted)';
+  try {
+    const data = await dbGet();
+    data.starters = starters;
+    data.subs = subs;
+    data.squad = [...starters, ...subs];
+    await dbWrite(data);
+    statusEl.textContent = '✅ Squad saved — ' + starters.length + ' starters, ' + subs.length + ' subs';
+    statusEl.style.color = 'var(--green)';
+    toast('✅ Squad confirmed!', 'ok');
+  } catch(e) {
+    statusEl.textContent = '✅ Saved locally (sync failed: ' + e.message + ')';
+    statusEl.style.color = 'var(--amber)';
+  }
+
+  // Show confirmation
+  let html = '<div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:.85rem">';
+  html += '<div style="font-weight:600;color:var(--green);margin-bottom:.6rem">✅ Squad confirmed</div>';
+  html += '<div style="margin-bottom:.5rem"><div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:.3rem">⚽ Starting XI</div>';
+  html += '<div style="font-size:.82rem">' + starters.join(', ') + '</div></div>';
+  if (subs.length) {
+    html += '<div><div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:.3rem">🔄 Subs</div>';
+    html += '<div style="font-size:.82rem;color:var(--muted)">' + subs.join(', ') + '</div></div>';
+  }
+  html += '</div>';
+  displayEl.innerHTML = html;
+  renderAll();
 }
 
 
