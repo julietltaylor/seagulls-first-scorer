@@ -1021,7 +1021,7 @@ function getWindowClose(fix, slotIndex) {
 
 function canPickNow(fix, playerName) {
   if (!fix || fix.result !== 'TBD') return false;
-  const fp = S.picks[fix.id] || {};
+  const fp = getFixPicks(fix.id);
   if (fp[playerName]) return false; // already picked
 
   // Test mode: bypass all time window checks
@@ -1058,7 +1058,7 @@ function getSlotStatus(fix, slotIdx) {
   if (!fix) return 'waiting';
   const order = getPickOrder(getCompletedCount(), fix ? fix.comp : null);
   const player = order[slotIdx];
-  const fp = S.picks[fix.id] || {};
+  const fp = getFixPicks(fix.id);
   if (fp[player]) return 'done';
 
   // Test mode: all unplayed slots show as active
@@ -1076,7 +1076,7 @@ function getSlotStatus(fix, slotIdx) {
 }
 
 function takenPicks(fixId) {
-  const fp = S.picks[fixId] || {};
+  const fp = getFixPicks(fixId);
   return Object.entries(fp).filter(([k]) => !k.endsWith('_time')).map(([,v]) => v);
 }
 
@@ -1231,7 +1231,7 @@ function renderPickSlots(fix, containerId, showPickArea) {
   if (!fix) { container.innerHTML = '<div class="empty">No upcoming fixture</div>'; return; }
   const isCup = fix.comp && fix.comp !== 'Premier League';
   const order = getPickOrder(getCompletedCount(), fix ? fix.comp : null);
-  const fp = S.picks[fix.id] || {};
+  const fp = getFixPicks(fix.id);
   const ko = getKickoff(fix);
   const now = new Date();
 
@@ -1354,7 +1354,7 @@ function updateCountdowns() {
     if (!cdEl) return;
 
     const myIdx = order.indexOf(S.currentUser);
-    const fp = S.picks[fix.id] || {};
+    const fp = getFixPicks(fix.id);
     const myStatus = myIdx >= 0 ? getSlotStatus(fix, myIdx) : 'locked';
     const myPick = fp[S.currentUser];
 
@@ -1688,7 +1688,7 @@ function renderAdmin() {
   const resetSel = document.getElementById('reset-fix-sel');
   if (resetSel) {
     const withPicks = S.fixtures.filter(f => {
-      const fp = S.picks[f.id] || {};
+      const fp = getFixPicks(f.id);
       return Object.keys(fp).some(k => !k.endsWith('_time'));
     }).sort((a,b) => a.datetime.localeCompare(b.datetime));
     const currentVal = resetSel.value;
@@ -1756,26 +1756,28 @@ function confirmResult() {
   fix.result = result;
   fix.scorer = scorer === 'no_goal' ? null : scorer;
   fix.goalTime = goalTime || null;
-  const fp = S.picks[fixId] || {};
+
+  // Look up picks — try both integer and string keys
+  const fp = S.picks[fixId] || S.picks[String(fixId)] || {};
+
+  // Find who picked the scorer
   let winner = null;
   if (fix.scorer) {
     const e = Object.entries(fp).find(([k,v]) => !k.endsWith('_time') && v === fix.scorer);
     winner = e ? e[0] : null;
   }
+
   // Disqualify any picks submitted after the first goal time
-  if (fix.scorer && goalTime && goalTime.trim()) {
+  if (fix.scorer && winner && goalTime && goalTime.trim()) {
     const goalMins = parseGoalTime(goalTime);
     if (goalMins !== null) {
       const ko = new Date(fix.datetime);
       const goalMs = ko.getTime() + goalMins * 60 * 1000;
-      const fp = S.picks[fix.id] || {};
-      Object.keys(fp).filter(k => !k.endsWith('_time')).forEach(player => {
-        const pickTime = fp[player + '_time'];
-        if (pickTime && new Date(pickTime) > new Date(goalMs)) {
-          console.log(`${player} pick disqualified — picked after goal at ${goalTime}`);
-          if (winner === player) winner = null; // disqualify if they were the winner
-        }
-      });
+      const winnerPickTime = fp[winner + '_time'];
+      if (winnerPickTime && new Date(winnerPickTime) > new Date(goalMs)) {
+        console.log(winner + ' pick disqualified — picked after goal at ' + goalTime);
+        winner = null;
+      }
     }
   }
 
@@ -1800,7 +1802,8 @@ function confirmResult() {
     S.currentPot++;
   }
   saveState();
-  toast(winner ? `🏆 ${winner} wins ${fix.potWon} pts!` : '✅ Confirmed — pot rolls over', 'ok');
+  saveResult_toSheets(fix); // sync result to JSONBin
+  toast(winner ? '🏆 ' + winner + ' wins ' + fix.potWon + ' pts!' : '✅ Confirmed — pot rolls over', 'ok');
   renderAll(); renderAdmin();
 }
 
@@ -2091,7 +2094,7 @@ function populateResetPlayers() {
   const sel = document.getElementById('reset-player-sel');
   sel.innerHTML = '<option value="">Select player…</option>';
   if (!fixId) return;
-  const fp = S.picks[fixId] || {};
+  const fp = getFixPicks(fixId);
   const players = Object.keys(fp).filter(k => !k.endsWith('_time'));
   if (!players.length) {
     sel.innerHTML = '<option value="">No picks submitted yet</option>';
@@ -2815,7 +2818,7 @@ function updateAdminPickDropdown() {
   const pickSel = document.getElementById('admin-entry-pick');
 
   // Populate players — only those who haven't picked yet for this fixture
-  const fp = S.picks[fixId] || {};
+  const fp = getFixPicks(fixId);
   const alreadyPicked = Object.keys(fp).filter(k => !k.endsWith('_time'));
   playerSel.innerHTML = '<option value="">Select player…</option>' +
     S.players
@@ -2850,7 +2853,7 @@ async function adminEnterPick() {
   if (!pick) { statusEl.textContent = '❌ Please select a pick'; statusEl.style.color = 'var(--red)'; return; }
 
   // Check not already picked
-  const fp = S.picks[fixId] || {};
+  const fp = getFixPicks(fixId);
   if (fp[player]) { statusEl.textContent = '❌ ' + player + ' has already picked'; statusEl.style.color = 'var(--red)'; return; }
 
   // Check unique
@@ -3114,6 +3117,12 @@ async function confirmJsonLineup() {
   html += '</div>';
   displayEl.innerHTML = html;
   renderAll();
+}
+
+
+// Helper: safely get picks for a fixture regardless of string/int key
+function getFixPicks(fid) {
+  return S.picks[fid] || S.picks[String(fid)] || S.picks[parseInt(fid)] || {};
 }
 
 
