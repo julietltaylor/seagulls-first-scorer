@@ -1317,7 +1317,7 @@ function renderPickSlots(fix, containerId, showPickArea) {
   } else {
     const windowStart = new Date(ko.getTime() - TEAM_RELEASE_MINS * 60 * 1000);
     area.className = 'your-pick-area';
-    area.innerHTML = `<div class="pick-locked-msg">⏳ Pick window opens at ${fmtTime(windowStart)} (60 mins before KO)</div>`;
+    area.innerHTML = `<div class="pick-locked-msg">⏳ Pick window opens at ${fmtTime(windowStart)} — once lineup confirmed in WhatsApp</div>`;
   }
 }
 
@@ -1369,8 +1369,8 @@ function updateCountdowns() {
       const ms = Math.max(0, ws.getTime() - now.getTime());
       cdEl.className = 'countdown-display waiting';
       cdEl.textContent = ms > 0 ? fmtCountdown(ms) : '—';
-      labelEl.textContent = ms > 0 ? `Pick window opens in (${TEAM_RELEASE_MINS} mins before KO)` : 'Pick window status unknown';
-      openEl.textContent = ms > 0 ? `Team release window opens at ${fmtTime(ws)} (${TEAM_RELEASE_MINS} mins before KO)` : '';
+      labelEl.textContent = ms > 0 ? 'Pick window opens in (once lineup confirmed in WhatsApp)' : 'Pick window status unknown';
+      openEl.textContent = ms > 0 ? `Window opens at ${fmtTime(ws)} — once lineup confirmed in WhatsApp` : '';
     }
   });
 }
@@ -2138,7 +2138,7 @@ function sharePickOrder() {
 
   if (isCup) {
     msg += `⚽ CUP GAME — No pick order\n`;
-    msg += `All players can pick from ${ko ? fmtTime(new Date(ko.getTime() - TEAM_RELEASE_MINS*60*1000)) : '75 mins before KO'}\n`;
+    msg += `All players can pick once the lineup has been confirmed in WhatsApp\n`;
     msg += `First come first served — unique picks only\n`;
   } else {
     msg += `🎯 PICK ORDER:\n`;
@@ -2146,7 +2146,7 @@ function sharePickOrder() {
       const suffix = i===0?'st':i===1?'nd':i===2?'rd':'th';
       let windowStr = '';
       if (ko && i === 0) {
-        windowStr = ` — window ${fmtTime(new Date(ko.getTime() - TEAM_RELEASE_MINS*60*1000))}–${fmtTime(new Date(ko.getTime() - P2_OPEN_MINS*60*1000))}`;
+        windowStr = ` — window ${fmtTime(new Date(ko.getTime() - TEAM_RELEASE_MINS*60*1000))}–${fmtTime(new Date(ko.getTime() - P2_OPEN_MINS*60*1000))} (once lineup confirmed in WhatsApp)`;
       } else if (ko) {
         const openMs = ko.getTime() - P2_OPEN_MINS*60*1000 + (i-1)*SLOT_MINS*60*1000;
         const closeMs = ko.getTime() - P2_OPEN_MINS*60*1000 + i*SLOT_MINS*60*1000;
