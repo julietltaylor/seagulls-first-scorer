@@ -1406,6 +1406,7 @@ function submitPick(fixId, selId) {
   S.picks[fix.id][S.currentUser] = val;
   S.picks[fix.id][S.currentUser+'_time'] = new Date().toISOString();
   saveState();
+  savePick_toSheets(fix.id, S.currentUser, val); // sync to JSONBin
   toast(`✅ Pick locked in: ${val}`, 'ok');
   renderHome(); renderPickSlots(fix, 'h-pick-slots', true);
   if (document.getElementById('page-picks').classList.contains('active')) renderPicksPage();
