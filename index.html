@@ -972,16 +972,37 @@ function getWindowOpen(fix, slotIndex, fp) {
   // even though Paul's base window is 19:15
   const order = getPickOrder(getCompletedCount(), fix ? fix.comp : null);
 
-  // Walk back through all previous players to find the earliest trigger
+  // If the immediately previous player already picked early, this player's window
+  // opens immediately after their pick — but ONLY if they are the direct predecessor
+  // (not skipping over players who still have active windows)
+  const order = getPickOrder(getCompletedCount(), fix ? fix.comp : null);
+  const now = new Date();
   let earliestTrigger = baseMs;
+
+  // Walk back to find the most recent player who picked
   for (let i = slotIndex - 1; i >= 0; i--) {
     const prevPlayer = order[i];
     const prevPickTime = fp[prevPlayer + '_time'];
     if (prevPickTime) {
-      // This player picked — their pick time could trigger early open for everyone after them
-      // But only cascade if they picked before their own base window close
-      earliestTrigger = Math.min(earliestTrigger, new Date(prevPickTime).getTime());
-      break; // Only need the most recent picker — cascade is automatic from there
+      // Found a player who picked — but only cascade if ALL players between
+      // them and the current slot have either picked or had windows expire
+      let allClear = true;
+      for (let j = i + 1; j < slotIndex; j++) {
+        const midPlayer = order[j];
+        if (!fp[midPlayer]) {
+          // This player hasn't picked — check if their window is still open
+          const midClose = getWindowClose(fix, j);
+          if (midClose && now < midClose) {
+            // Their window is still open — don't cascade past them
+            allClear = false;
+            break;
+          }
+        }
+      }
+      if (allClear) {
+        earliestTrigger = Math.min(earliestTrigger, new Date(prevPickTime).getTime());
+      }
+      break;
     }
   }
 
