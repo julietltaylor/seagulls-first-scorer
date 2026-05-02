@@ -967,11 +967,6 @@ function getWindowOpen(fix, slotIndex, fp) {
   // Player 2 = KO-55min, Player 3 = KO-50min, Player 4 = KO-45min, etc.
   const baseMs = ko.getTime() - P2_OPEN_MINS * 60 * 1000 + (slotIndex - 1) * SLOT_MINS * 60 * 1000;
 
-  // If any earlier player picked early, cascade the window open time down
-  // e.g. if Mick (slot 2) picks at 19:11, Paul (slot 3) can go immediately at 19:11
-  // even though Paul's base window is 19:15
-  const order = getPickOrder(getCompletedCount(), fix ? fix.comp : null);
-
   // If the immediately previous player already picked early, this player's window
   // opens immediately after their pick — but ONLY if they are the direct predecessor
   // (not skipping over players who still have active windows)
