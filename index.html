@@ -508,10 +508,17 @@ hr{border:none;border-top:1px solid var(--brd);margin:1rem 0;}
   <div class="card" style="margin-bottom:1rem;border-color:rgba(245,158,11,.35)">
     <div class="admin-sec-title" style="color:var(--amber)">🧪 Test Mode</div>
     <p style="font-size:.78rem;color:var(--muted);margin-bottom:.85rem">Bypass time windows so players can pick at any time. Turn off for the real game.</p>
-    <div style="display:flex;align-items:center;gap:1rem">
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:.75rem">
       <button class="btn sm" id="test-mode-btn" onclick="toggleTestMode()"
         style="background:var(--amber);color:#111">Enable Test Mode</button>
       <span id="test-mode-status" style="font-size:.82rem;color:var(--muted)">⚪ Test mode OFF — real time windows active</span>
+    </div>
+    <hr style="border-color:var(--brd);margin:.5rem 0">
+    <p style="font-size:.78rem;color:var(--muted);margin:.75rem 0 .5rem">Player PIN requirement — disable so players can log in without a PIN.</p>
+    <div style="display:flex;align-items:center;gap:1rem">
+      <button class="btn sm" id="pin-req-btn" onclick="togglePinRequirement()"
+        style="background:var(--green);color:#111">PINs Required ✅</button>
+      <span id="pin-req-status" style="font-size:.82rem;color:var(--muted)">🔐 Players must enter their PIN to log in</span>
     </div>
   </div>
 
@@ -865,6 +872,7 @@ let S = {
   },
   lineupConfirmed: false,
   testMode: false,  // Admin can enable to bypass time windows
+  requirePin: true,  // Admin can disable PIN requirement
   lineupFixtureId: null,
   lineupFetchedAt: null,
 };
@@ -876,6 +884,7 @@ function loadState() {
       const p = JSON.parse(s);
       // Only load live picks and any admin changes — keep season data fixed
       if (p.picks) S.picks = p.picks;
+      if (p.requirePin !== undefined) S.requirePin = p.requirePin;
       if (p.pins) S.pins = {...S.pins, ...p.pins};
       if (p.baseOrder) S.baseOrder = p.baseOrder;
       if (p.players) S.players = p.players;
@@ -1141,6 +1150,11 @@ let _pinUser = null;
 let _pinEntry = '';
 
 function pinPrompt(name) {
+  // If PIN requirement disabled by admin, log straight in
+  if (!S.requirePin) {
+    loginAs(name);
+    return;
+  }
   _pinUser = name;
   _pinEntry = '';
   document.getElementById('pin-who').textContent = name;
@@ -1620,6 +1634,23 @@ function renderResults() {
 //  ADMIN
 // ══════════════════════════════════════════
 function renderAdmin() {
+  // Sync PIN requirement button state
+  const pinBtn = document.getElementById('pin-req-btn');
+  const pinStatus = document.getElementById('pin-req-status');
+  if (pinBtn && pinStatus) {
+    if (S.requirePin) {
+      pinBtn.textContent = 'PINs Required ✅';
+      pinBtn.style.background = 'var(--green)';
+      pinBtn.style.color = '#111';
+      pinStatus.textContent = '🔐 Players must enter their PIN to log in';
+    } else {
+      pinBtn.textContent = 'PINs Disabled ⚠️';
+      pinBtn.style.background = 'var(--amber)';
+      pinBtn.style.color = '#111';
+      pinStatus.textContent = '⚠️ PINs disabled — anyone can log in as any player';
+    }
+  }
+
   // Sync test mode button state
   const btn = document.getElementById('test-mode-btn');
   const status = document.getElementById('test-mode-status');
@@ -2068,6 +2099,27 @@ async function fetchLineupSilent() {
   }
 }
 
+
+function togglePinRequirement() {
+  S.requirePin = !S.requirePin;
+  saveState();
+  const btn = document.getElementById('pin-req-btn');
+  const status = document.getElementById('pin-req-status');
+  if (S.requirePin) {
+    btn.textContent = 'PINs Required ✅';
+    btn.style.background = 'var(--green)';
+    btn.style.color = '#111';
+    status.textContent = '🔐 Players must enter their PIN to log in';
+    toast('🔐 PINs enabled — players must enter PIN', 'ok');
+  } else {
+    btn.textContent = 'PINs Disabled ⚠️';
+    btn.style.background = 'var(--amber)';
+    btn.style.color = '#111';
+    status.textContent = '⚠️ PINs disabled — anyone can log in as any player';
+    toast('⚠️ PINs disabled — players can log in without PIN', 'ok');
+  }
+  buildLoginGrid();
+}
 
 function toggleTestMode() {
   S.testMode = !S.testMode;
