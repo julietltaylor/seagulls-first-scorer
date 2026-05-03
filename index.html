@@ -683,6 +683,27 @@ hr{border:none;border-top:1px solid var(--brd);margin:1rem 0;}
     <div id="admin-entry-status" style="font-size:.82rem;min-height:1.2em"></div>
   </div>
 
+  <!-- BULK SEASON PICK ENTRY -->
+  <div class="card" style="margin-bottom:1rem;border-color:rgba(168,85,247,.25)">
+    <div class="admin-sec-title" style="color:var(--purple)">📊 Bulk Pick Entry — Season History</div>
+    <p style="font-size:.78rem;color:var(--muted);margin-bottom:.85rem">
+      Enter all picks for a completed game. Select the fixture, fill in each player's pick and save. Use this to backfill the season history.
+    </p>
+    <div class="form-group">
+      <label>Select Fixture</label>
+      <select id="bulk-fix-sel" onchange="loadBulkPicks()">
+        <option value="">Select fixture…</option>
+      </select>
+    </div>
+    <div id="bulk-fix-info" style="display:none;background:var(--bg2);border:1px solid var(--brd);border-radius:9px;padding:.75rem;margin-bottom:.85rem;font-size:.82rem"></div>
+    <div id="bulk-picks-grid"></div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem">
+      <button class="btn" style="background:var(--purple)" onclick="saveBulkPicks()">💾 Save All Picks</button>
+      <button class="btn ghost sm" onclick="clearBulkPicks()">✕ Clear All</button>
+    </div>
+    <div id="bulk-status" style="font-size:.82rem;margin-top:.5rem;min-height:1.2em"></div>
+  </div>
+
   <div class="card">
     <div class="admin-sec-title">🔍 Submitted Picks</div>
     <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-end;margin-bottom:.85rem">
@@ -803,11 +824,12 @@ const SEASON_RESULTS = [
 
 // Brighton 2025/26 squad
 const SQUAD = [
-  'Bart Verbruggen','Lewis Dunk','Jan Paul van Hecke','Ferdi Kadioglu','Mats Wieffer',
-  'Maxim De Cuyper','Joel Veltman','Olivier Boscagli','Carlos Baleba','Pascal Gross',
-  'James Milner','Jack Hinshelwood','Yasin Ayari','Diego Gómez','Kaoru Mitoma',
-  'Yankuba Minteh','Georginio Rutter','Danny Welbeck','Charalampos Kostoulas',
-  'Stefanos Tzimas','Brajan Gruda','Matt O\'Riley','Solly March','Jason Steele'
+  'Bart Verbruggen','Jason Steele','Lewis Dunk','Jan Paul van Hecke','Ferdi Kadioglu',
+  'Mats Wieffer','Maxim De Cuyper','Joel Veltman','Olivier Boscagli','Carlos Baleba',
+  'Pascal Gross','James Milner','Jack Hinshelwood','Yasin Ayari','Diego Gómez',
+  'Kaoru Mitoma','Yankuba Minteh','Georginio Rutter','Danny Welbeck',
+  'Charalampos Kostoulas','Stefanos Tzimas','Brajan Gruda','Matt O\'Riley',
+  'Solly March','Igor Julio','Harry Howell','Tommy Watson','Adam Webster'
 ];
 
 // Points now loaded from JSONBin — not hardcoded
@@ -1670,6 +1692,19 @@ function renderAdmin() {
 
   // Populate edit fixture select
   populateEditFixtureSelect();
+
+  // Populate bulk pick entry fixture select — all fixtures
+  const bulkSel = document.getElementById('bulk-fix-sel');
+  if (bulkSel) {
+    const allFix = [...S.fixtures].sort((a,b) => a.datetime.localeCompare(b.datetime));
+    bulkSel.innerHTML = '<option value="">Select fixture…</option>' +
+      allFix.map(f => {
+        const pickCount = Object.keys(getFixPicks(f.id)).filter(k => !k.endsWith('_time')).length;
+        const status = f.result !== 'TBD' ? f.result : 'TBD';
+        const icon = f.winner ? '🏆' : f.result !== 'TBD' ? '✅' : '📅';
+        return '<option value="' + f.id + '">' + icon + ' ' + fmtShort(f.datetime) + ' — ' + f.opp + ' (' + f.ha + ') [' + status + '] ' + (pickCount > 0 ? '(' + pickCount + ' picks)' : '') + '</option>';
+      }).join('');
+  }
 
   // Populate admin entry fixture select — upcoming TBD fixtures
   const entryFixSel = document.getElementById('admin-entry-fix');
@@ -3123,6 +3158,114 @@ async function confirmJsonLineup() {
 // Helper: safely get picks for a fixture regardless of string/int key
 function getFixPicks(fid) {
   return S.picks[fid] || S.picks[String(fid)] || S.picks[parseInt(fid)] || {};
+}
+
+
+// ── BULK SEASON PICK ENTRY ──────────────────────────────────
+
+function loadBulkPicks() {
+  const fixId = parseInt(document.getElementById('bulk-fix-sel').value);
+  const grid = document.getElementById('bulk-picks-grid');
+  const info = document.getElementById('bulk-fix-info');
+  if (!fixId) { grid.innerHTML = ''; info.style.display = 'none'; return; }
+
+  const fix = S.fixtures.find(f => f.id === fixId);
+  if (!fix) return;
+
+  // Show fixture info
+  info.style.display = 'block';
+  const resultColor = fix.result === 'TBD' ? 'var(--muted)' : fix.result.startsWith('W') ? 'var(--green)' : fix.result.startsWith('D') ? 'var(--amber)' : 'var(--red)';
+  info.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center">' +
+    '<div><strong>' + fix.opp + '</strong> (' + fix.ha + ')</div>' +
+    '<div style="color:' + resultColor + '">' + fix.result + '</div>' +
+    (fix.scorer ? '<div>⚽ ' + fix.scorer + ' ' + (fix.goalTime || '') + '</div>' : '') +
+    (fix.winner ? '<div style="color:var(--green)">🏆 Winner: ' + fix.winner + '</div>' : '<div style="color:var(--muted)">No correct pick</div>') +
+    '</div>';
+
+  // Get existing picks for this fixture
+  const fp = getFixPicks(fixId);
+
+  // Build grid — one row per player with a dropdown
+  // Use full season squad for bulk entry — combines hardcoded SQUAD with any matchday additions
+  const fullSeasonSquad = [...new Set([...SQUAD, ...S.squad])].sort();
+  const squadOpts = fullSeasonSquad.map(function(p) { return '<option value="' + p + '">' + p + '</option>'; }).join('');
+
+  grid.innerHTML = '<div style="display:flex;flex-direction:column;gap:.4rem">' +
+    S.players.map(function(player) {
+      const currentPick = fp[player] || '';
+      const isWinner = fix.winner === player;
+      const borderColor = isWinner ? 'rgba(34,197,94,.4)' : currentPick ? 'rgba(0,87,184,.3)' : 'var(--brd)';
+      const bgColor = isWinner ? 'rgba(34,197,94,.06)' : currentPick ? 'rgba(0,87,184,.04)' : 'var(--bg2)';
+
+      return '<div style="display:flex;align-items:center;gap:.6rem;padding:.5rem .7rem;' +
+        'background:' + bgColor + ';border:1px solid ' + borderColor + ';border-radius:8px">' +
+        '<div style="width:26px;height:26px;border-radius:50%;background:var(--blue);' +
+        'display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0">' +
+        player[0] + '</div>' +
+        '<div style="font-weight:600;font-size:.85rem;width:80px;flex-shrink:0">' + player +
+        (isWinner ? ' 🏆' : '') + '</div>' +
+        '<select id="bulk-pick-' + player + '" style="flex:1;font-size:.82rem;padding:.4rem .6rem">' +
+        '<option value="">— no pick —</option>' +
+        '<option value="__none__">Did not pick</option>' +
+        squadOpts +
+        '</select>' +
+        '</div>';
+    }).join('') + '</div>';
+
+  // Pre-select existing picks
+  S.players.forEach(function(player) {
+    const sel = document.getElementById('bulk-pick-' + player);
+    if (sel && fp[player]) sel.value = fp[player];
+  });
+}
+
+async function saveBulkPicks() {
+  const fixId = parseInt(document.getElementById('bulk-fix-sel').value);
+  const statusEl = document.getElementById('bulk-status');
+  if (!fixId) { statusEl.textContent = '❌ Please select a fixture'; statusEl.style.color = 'var(--red)'; return; }
+
+  statusEl.textContent = 'Saving…';
+  statusEl.style.color = 'var(--muted)';
+
+  // Collect all picks
+  const picks = {};
+  let count = 0;
+  S.players.forEach(function(player) {
+    const sel = document.getElementById('bulk-pick-' + player);
+    if (sel && sel.value && sel.value !== '__none__') {
+      picks[player] = sel.value;
+      picks[player + '_time'] = '2025-01-01T00:00:00.000Z'; // placeholder time for historical
+      count++;
+    }
+  });
+
+  // Save locally
+  S.picks[fixId] = picks;
+  saveState();
+
+  // Save to JSONBin
+  try {
+    const data = await dbGet();
+    if (!data.picks) data.picks = {};
+    data.picks[String(fixId)] = picks;
+    await dbWrite(data);
+    statusEl.textContent = '✅ Saved ' + count + ' picks for this fixture';
+    statusEl.style.color = 'var(--green)';
+    toast('✅ ' + count + ' picks saved', 'ok');
+  } catch(e) {
+    statusEl.textContent = '✅ Saved locally (sync failed: ' + e.message + ')';
+    statusEl.style.color = 'var(--amber)';
+  }
+
+  renderAdmin();
+}
+
+function clearBulkPicks() {
+  S.players.forEach(function(player) {
+    const sel = document.getElementById('bulk-pick-' + player);
+    if (sel) sel.value = '';
+  });
+  document.getElementById('bulk-status').textContent = '';
 }
 
 
