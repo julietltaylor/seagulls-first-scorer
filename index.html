@@ -947,8 +947,7 @@ function rotateOrderAfterGame(comp) {
   rotated.push(rotated.shift());
   S.baseOrder = rotated;
   saveState();
-  // Persist to JSONBin so all devices see the new order
-  dbWrite_baseOrder(S.baseOrder);
+  // Note: baseOrder is saved to JSONBin as part of saveResult_toSheets — no separate call needed
 }
 
 async function dbWrite_baseOrder(order) {
@@ -2863,15 +2862,42 @@ async function savePick_toSheets(fixtureId, player, pick) {
 }
 
 async function saveResult_toSheets(fix) {
+  // Single JSONBin write with result, points AND pick order to avoid race conditions
   try {
-    await dbPost('saveResult', {
-      fixtureId:  fix.id,
-      result:     fix.result,
-      scorer:     fix.scorer,
-      goalTime:   fix.goalTime,
-      winner:     fix.winner,
-      potWon:     fix.potWon
+    const data = await dbGet();
+
+    // Save result
+    if (!data.results) data.results = {};
+    data.results[String(fix.id)] = {
+      result: fix.result, scorer: fix.scorer || null,
+      goalTime: fix.goalTime || null, winner: fix.winner || null,
+      potWon: fix.potWon || 0, confirmedAt: new Date().toISOString()
+    };
+
+    // Save updated points
+    if (!data.points) data.points = {};
+    if (!data.correctPicks) data.correctPicks = {};
+    S.players.forEach(function(name) {
+      data.points[name] = S.points[name] || 0;
+      data.correctPicks[name] = S.correctPicks[name] || 0;
     });
+
+    // Save rotated pick order
+    data.baseOrder = S.baseOrder;
+
+    // Save updated fixture in fixtures array
+    if (data.fixtures) {
+      const idx = data.fixtures.findIndex(function(f) { return String(f.id) === String(fix.id); });
+      if (idx >= 0) {
+        data.fixtures[idx] = Object.assign({}, data.fixtures[idx], {
+          result: fix.result, scorer: fix.scorer, goalTime: fix.goalTime,
+          winner: fix.winner, potWon: fix.potWon
+        });
+      }
+    }
+
+    await dbWrite(data);
+    console.log('✅ Result, points, order and fixture all saved to JSONBin');
   } catch(err) { console.warn('DB result save failed:', err.message); }
 }
 
