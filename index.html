@@ -2099,9 +2099,15 @@ async function fetchLineupSilent() {
 }
 
 
-function togglePinRequirement() {
+async function togglePinRequirement() {
   S.requirePin = !S.requirePin;
   saveState();
+  // Sync to JSONBin so all devices see the setting
+  try {
+    const data = await dbGet();
+    data.requirePin = S.requirePin;
+    await dbWrite(data);
+  } catch(e) { console.warn('Failed to save PIN setting to JSONBin:', e.message); }
   const btn = document.getElementById('pin-req-btn');
   const status = document.getElementById('pin-req-status');
   if (S.requirePin) {
@@ -2814,6 +2820,10 @@ function applyRemoteData(data) {
   // Load pick order from JSONBin
   if (data.baseOrder && data.baseOrder.length > 0) {
     S.baseOrder = data.baseOrder;
+  }
+  // Load PIN requirement setting from JSONBin
+  if (data.requirePin !== undefined) {
+    S.requirePin = data.requirePin;
   }
   // Fixtures from JSONBin fully override hardcoded ones
   // JSONBin is the single source of truth for fixture data
