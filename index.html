@@ -879,7 +879,7 @@ let S = {
 
 function loadState() {
   try {
-    const s = localStorage.getItem('sfgs_v4');
+    const s = localStorage.getItem(LS_VERSION);
     if (s) {
       const p = JSON.parse(s);
       // Only load live picks and any admin changes — keep season data fixed
@@ -913,7 +913,7 @@ function loadState() {
 
 function saveState() {
   try {
-    localStorage.setItem('sfgs_v4', JSON.stringify({
+    localStorage.setItem(LS_VERSION, JSON.stringify({
       picks: S.picks,
       pins: S.pins,
       baseOrder: S.baseOrder,
@@ -2168,14 +2168,14 @@ function updatePin() {
 
 function hardReset() {
   if (confirm('This will clear all saved picks and reset the app. Continue?')) {
-    localStorage.removeItem('sfgs_v4');
+    localStorage.removeItem(LS_VERSION);
     location.reload();
   }
 }
 
 function hardReset() {
   if (confirm('This will clear saved data and reload. Continue?')) {
-    localStorage.removeItem('sfgs_v4');
+    localStorage.removeItem(LS_VERSION);
     location.reload();
   }
 }
@@ -3372,13 +3372,18 @@ function toast(msg, type='ok') {
 //  INIT
 // ══════════════════════════════════════════
 // Use versioned localStorage key — bump version to force fresh start
-const LS_VERSION = 'sfgs_v4';
-const oldData = localStorage.getItem('sfgs_v4') || localStorage.getItem('sfgs_v3');
-if (oldData) {
-  // Migrate picks from old key if present, then clear old keys
+const LS_VERSION = 'sfgs_v5';
+const oldV4 = localStorage.getItem('sfgs_v4');
+const oldV3 = localStorage.getItem('sfgs_v3');
+if (oldV4 || oldV3) {
+  // One-time migration from old keys — preserve picks and settings
   try {
-    const parsed = JSON.parse(oldData);
-    if (parsed.picks) localStorage.setItem(LS_VERSION, JSON.stringify({ picks: parsed.picks }));
+    const parsed = JSON.parse(oldV4 || oldV3);
+    const migrated = {};
+    if (parsed.picks) migrated.picks = parsed.picks;
+    if (parsed.requirePin !== undefined) migrated.requirePin = parsed.requirePin;
+    if (parsed.baseOrder) migrated.baseOrder = parsed.baseOrder;
+    localStorage.setItem(LS_VERSION, JSON.stringify(migrated));
   } catch(e) {}
   localStorage.removeItem('sfgs_v4');
   localStorage.removeItem('sfgs_v3');
