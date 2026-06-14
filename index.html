@@ -782,62 +782,18 @@ const BRIGHTON_TEAM_ID = 51;
 
 // Completed results from the spreadsheet
 // winner = name of person who picked correctly, potWon = points awarded
-const SEASON_RESULTS = [
-  {id:1,  datetime:'2025-08-16T15:00', comp:'Premier League', opp:'Fulham',         ha:'H', result:'D 1-1', scorer:"Matt O'Riley",          goalTime:'(pen)',   winner:'',      potWon:0},
-  {id:2,  datetime:'2025-08-24T15:00', comp:'Premier League', opp:'Everton',         ha:'A', result:'L 0-2', scorer:null,                    goalTime:null,      winner:'',      potWon:0},
-  {id:3,  datetime:'2025-08-27T19:45', comp:'Carabao Cup',    opp:'Oxford Utd',      ha:'A', result:'W 6-0', scorer:'Olivier Boscagli',       goalTime:"(13')",   winner:'Claire',potWon:3},
-  {id:4,  datetime:'2025-08-31T15:00', comp:'Premier League', opp:'Man City',        ha:'H', result:'W 2-1', scorer:'James Milner',           goalTime:"(pen,67')",winner:'',     potWon:0},
-  {id:5,  datetime:'2025-09-13T15:00', comp:'Premier League', opp:'Bournemouth',     ha:'A', result:'L 1-2', scorer:'Kaoru Mitoma',           goalTime:"(48')",   winner:'',      potWon:0},
-  {id:6,  datetime:'2025-09-20T15:00', comp:'Premier League', opp:'Tottenham',       ha:'H', result:'D 2-2', scorer:'Yankuba Minteh',         goalTime:'',        winner:'Claire',potWon:3},
-  {id:7,  datetime:'2025-09-23T19:45', comp:'Carabao Cup',    opp:'Barnsley',        ha:'A', result:'W 6-0', scorer:'Diego Gómez',            goalTime:"(9')",    winner:'Mick',  potWon:1},
-  {id:8,  datetime:'2025-09-27T15:00', comp:'Premier League', opp:'Chelsea',         ha:'A', result:'W 3-1', scorer:'Danny Welbeck',          goalTime:"(77')",   winner:'',      potWon:0},
-  {id:9,  datetime:'2025-10-05T14:00', comp:'Premier League', opp:'Wolves',          ha:'A', result:'D 1-1', scorer:'Jan Paul van Hecke',     goalTime:"(86')",   winner:'',      potWon:0},
-  {id:10, datetime:'2025-10-18T15:00', comp:'Premier League', opp:'Newcastle',       ha:'H', result:'W 2-1', scorer:'Danny Welbeck',          goalTime:"(41')",   winner:'Mick',  potWon:3},
-  {id:11, datetime:'2025-10-25T12:30', comp:'Premier League', opp:'Man Utd',         ha:'A', result:'L 2-4', scorer:'Danny Welbeck',          goalTime:"(74')",   winner:'Juliet',potWon:1},
-  {id:12, datetime:'2025-10-29T19:45', comp:'Carabao Cup',    opp:'Arsenal',         ha:'A', result:'L 0-2', scorer:null,                    goalTime:null,      winner:'',      potWon:0},
-  {id:13, datetime:'2025-11-01T15:00', comp:'Premier League', opp:'Leeds',           ha:'H', result:'W 3-0', scorer:'Danny Welbeck',          goalTime:"(11')",   winner:'Mick',  potWon:2},
-  {id:14, datetime:'2025-11-09T14:00', comp:'Premier League', opp:'Crystal Palace',  ha:'A', result:'D 0-0', scorer:null,                    goalTime:null,      winner:'',      potWon:0},
-  {id:15, datetime:'2025-11-22T15:00', comp:'Premier League', opp:'Brentford',       ha:'H', result:'W 2-1', scorer:'Danny Welbeck',          goalTime:"(71')",   winner:'Juliet',potWon:2},
-  {id:16, datetime:'2025-11-30T14:00', comp:'Premier League', opp:'Nottm Forest',    ha:'A', result:'W 2-0', scorer:'Maxim De Cuyper',        goalTime:"(45+1')", winner:'',      potWon:0},
-  {id:17, datetime:'2025-12-03T19:30', comp:'Premier League', opp:'Aston Villa',     ha:'H', result:'L 3-4', scorer:'Jan Paul van Hecke',     goalTime:"(9')",    winner:'',      potWon:0},
-  {id:18, datetime:'2025-12-07T15:00', comp:'Premier League', opp:'West Ham',        ha:'H', result:'D 1-1', scorer:'Georginio Rutter',       goalTime:"(90+')",  winner:'Juliet',potWon:3},
-  {id:19, datetime:'2025-12-13T15:00', comp:'Premier League', opp:'Liverpool',       ha:'A', result:'L 0-2', scorer:null,                    goalTime:null,      winner:'',      potWon:0},
-  {id:20, datetime:'2025-12-20T15:00', comp:'Premier League', opp:'Sunderland',      ha:'H', result:'D 0-0', scorer:null,                    goalTime:null,      winner:'',      potWon:0},
-  {id:21, datetime:'2025-12-27T12:30', comp:'Premier League', opp:'Arsenal',         ha:'A', result:'L 1-2', scorer:'Diego Gómez',            goalTime:"(64')",   winner:'Claire',potWon:3},
-  {id:22, datetime:'2025-12-30T14:30', comp:'Premier League', opp:'West Ham',        ha:'A', result:'D 2-2', scorer:'Danny Welbeck',          goalTime:"(pen,32')",winner:'Mick', potWon:1},
-  {id:23, datetime:'2026-01-03T15:00', comp:'Premier League', opp:'Burnley',         ha:'H', result:'W 2-0', scorer:'Georginio Rutter',       goalTime:"(29')",   winner:'Andy',  potWon:1},
-  {id:24, datetime:'2026-01-07T19:30', comp:'Premier League', opp:'Man City',        ha:'A', result:'D 1-1', scorer:'Kaoru Mitoma',           goalTime:"(60')",   winner:'Claire',potWon:1},
-  {id:25, datetime:'2026-01-11T16:30', comp:'FA Cup',         opp:'Man Utd',         ha:'A', result:'W 2-1', scorer:'Brajan Gruda',           goalTime:"(12')",   winner:'',      potWon:0},
-  {id:26, datetime:'2026-01-19T15:00', comp:'Premier League', opp:'Bournemouth',     ha:'H', result:'D 1-1', scorer:'Charalampos Kostoulas',  goalTime:"(90+1')", winner:'',      potWon:0},
-  {id:27, datetime:'2026-01-24T15:00', comp:'Premier League', opp:'Fulham',          ha:'A', result:'L 1-2', scorer:'Yasin Ayari',            goalTime:"(28')",   winner:'',      potWon:0},
-  {id:28, datetime:'2026-01-31T15:00', comp:'Premier League', opp:'Everton',         ha:'H', result:'D 1-1', scorer:'Pascal Gross',           goalTime:"(73')",   winner:'Juliet',potWon:4},
-  {id:29, datetime:'2026-02-08T14:00', comp:'Premier League', opp:'Crystal Palace',  ha:'H', result:'L 0-1', scorer:null,                    goalTime:null,      winner:'',      potWon:0},
-  {id:30, datetime:'2026-02-11T19:30', comp:'Premier League', opp:'Aston Villa',     ha:'A', result:'L 0-1', scorer:null,                    goalTime:null,      winner:'',      potWon:0},
-  {id:31, datetime:'2026-02-14T15:00', comp:'FA Cup',         opp:'Liverpool',       ha:'A', result:'L 0-3', scorer:null,                    goalTime:null,      winner:'',      potWon:0},
-  {id:32, datetime:'2026-02-21T15:00', comp:'Premier League', opp:'Brentford',       ha:'A', result:'W 2-0', scorer:'Diego Gómez',            goalTime:"(30')",   winner:'Juliet',potWon:4},
-  {id:33, datetime:'2026-03-01T14:00', comp:'Premier League', opp:'Nottm Forest',    ha:'H', result:'W 2-1', scorer:'Diego Gómez',            goalTime:"(6')",    winner:'',      potWon:0},
-  {id:34, datetime:'2026-03-04T19:30', comp:'Premier League', opp:'Arsenal',         ha:'H', result:'L 0-1', scorer:null,                    goalTime:null,      winner:'',      potWon:0},
-  {id:35, datetime:'2026-03-14T15:00', comp:'Premier League', opp:'Sunderland',      ha:'A', result:'W 1-0', scorer:'Yankuba Minteh',         goalTime:"(58')",   winner:'Mick',  potWon:3},
-  {id:36, datetime:'2026-03-21T12:45', comp:'Premier League', opp:'Liverpool',       ha:'H', result:'W 2-1', scorer:'Danny Welbeck',          goalTime:"(14')",   winner:'Cathy', potWon:1},
-  {id:37, datetime:'2026-04-11T14:00', comp:'Premier League', opp:'Burnley',         ha:'A', result:'W 2-0', scorer:'Mats Wieffer',           goalTime:"(43')",   winner:'',      potWon:0},
-  {id:38, datetime:'2026-04-18T16:30', comp:'Premier League', opp:'Tottenham',       ha:'A', result:'D 2-2', scorer:'Kaoru Mitoma',           goalTime:"(45+3')", winner:'',      potWon:0},
-  // ── UPCOMING ──
-  {id:39, datetime:'2026-04-21T20:00', comp:'Premier League', opp:'Chelsea',         ha:'H', result:'W 3-0', scorer:'Ferdi Kadioglu',           goalTime:"(3')",    winner:'',      potWon:0, apiFixtureId:740928},
-  {id:40, datetime:'2026-05-02T14:00', comp:'Premier League', opp:'Newcastle',       ha:'A', result:'TBD',   scorer:null,                    goalTime:null,      winner:null,    potWon:0},
-  {id:41, datetime:'2026-05-09T14:00', comp:'Premier League', opp:'Wolves',          ha:'H', result:'TBD',   scorer:null,                    goalTime:null,      winner:null,    potWon:0},
-  {id:42, datetime:'2026-05-17T14:00', comp:'Premier League', opp:'Leeds',           ha:'A', result:'TBD',   scorer:null,                    goalTime:null,      winner:null,    potWon:0},
-  {id:43, datetime:'2026-05-24T15:00', comp:'Premier League', opp:'Man Utd',         ha:'H', result:'TBD',   scorer:null,                    goalTime:null,      winner:null,    potWon:0},
-];
+// Fixtures now come entirely from JSONBin — no hardcoded fixtures
+// Brighton 2025/26 season is archived in JSONBin under "Brighton 2025-26"
+const SEASON_RESULTS = [];
 
 // Brighton 2025/26 squad
 const SQUAD = [
-  'Bart Verbruggen','Jason Steele','Lewis Dunk','Jan Paul van Hecke','Ferdi Kadioglu',
-  'Mats Wieffer','Maxim De Cuyper','Joel Veltman','Olivier Boscagli','Carlos Baleba',
-  'Pascal Gross','James Milner','Jack Hinshelwood','Yasin Ayari','Diego Gómez',
-  'Kaoru Mitoma','Yankuba Minteh','Georginio Rutter','Danny Welbeck',
-  'Charalampos Kostoulas','Stefanos Tzimas','Brajan Gruda','Matt O\'Riley',
-  'Solly March','Igor Julio','Harry Howell','Tommy Watson','Adam Webster'
-];
+  'Jordan Pickford','Dean Henderson','James Trafford','Reece James','Ezri Konsa',
+  'Jarell Quansah','John Stones','Marc Guehi','Dan Burn','Nico O\'Reilly',
+  'Djed Spence','Tino Livramento','Declan Rice','Elliot Anderson','Kobbie Mainoo',
+  'Jordan Henderson','Morgan Rogers','Jude Bellingham','Eberechi Eze','Harry Kane',
+  'Ivan Toney','Ollie Watkins','Bukayo Saka','Marcus Rashford','Anthony Gordon','Noni Madueke'
+]
 
 // Points now loaded from JSONBin — not hardcoded
 const SEASON_POINTS = {};
